@@ -109,16 +109,10 @@ bin/rails server
 - Use the Procfile.dev (requires foreman or a similar tool) to run both Rails
 	and the JS watcher in parallel:
 
-```bash
-# install foreman (if needed)
-gem install foreman
-foreman start -f Procfile.dev
-```
-
 Or use the `bin/dev` script if present in your repo (common in Rails 7+ setups):
 
 ```bash
-./bin/dev
+bin/dev
 ```
 
 7. Open http://localhost:3000 in your browser.
