@@ -19,6 +19,19 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
+production:
+  primary: &primary_production
+    <<: *default
+    url: <%= ENV["DATABASE_URL"] %>
+  cable:
+    <<: *primary_production
+    migrations_paths: db/cable_migrate
+  cache:
+    <<: *primary_production
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    migrations_paths: db/queue_migrate
   # set to default ruby first
   # adapter: sqlite3
   # pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
