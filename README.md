@@ -86,9 +86,6 @@ bundle install
 npm install
 npm run build
 
-# or with yarn
-yarn install
-yarn build
 ```
 
 5. Set up the database (development uses SQLite by default):
