@@ -1,5 +1,3 @@
 class Message < ApplicationRecord
-    belongs_to :seller_id, class_name: 'User'
-    belongs_to :interested_id, class_name: 'User'
-    belongs_to :item_id, class_name: 'Product'
+    belongs_to :chat_id, class_name: 'Chat'
 end
