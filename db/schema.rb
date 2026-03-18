@@ -84,9 +84,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_022013) do
     t.float "seller_rating", default: 0.0, null: false
     t.integer "seller_review_count", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.string "verification_otp"
+    t.datetime "verification_sent_at"
     t.string "verification_token"
     t.datetime "verified_at"
     t.index ["cuhk_id"], name: "index_users_on_cuhk_id", unique: true
+    t.index ["verification_otp"], name: "index_users_on_verification_otp"
     t.index ["verification_token"], name: "index_users_on_verification_token", unique: true
   end
 
