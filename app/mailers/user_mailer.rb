@@ -3,7 +3,8 @@ class UserMailer < ApplicationMailer
 
   def verification_email(user)
     @user = user
-    @url  = verify_users_url(token: @user.verification_token)
-    mail(to: @user.email, subject: 'Verify your CUHK email')
+    @otp = @user.verification_otp
+    # app/views/user_mailer/verification_email.html.erb
+    mail(to: @user.email, subject: 'Your CUHK verification code')
   end
 end
