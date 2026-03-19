@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import IndexPage from "./pages/IndexPage"
+import ProfilePage from "./pages/ProfilePage"
 import ProductInfoPage from "./pages/ProductInfoPage";
 import SellPage from "./pages/SellPage";
 import MarketplaceFilters from "./common/MarketplaceFilters";
+;
 
 export default function App() {
   const [isSellHovered, setIsSellHovered] = React.useState(false);
@@ -18,6 +20,7 @@ export default function App() {
             <Link to="/" style={{ color: "#0066cc", textDecoration: "none" }}>Home</Link>
             <Link to="/about" style={{ color: "#0066cc", textDecoration: "none" }}>About</Link>
             <Link to="/index" style={{ color: "#0066cc", textDecoration: "none" }}>Index</Link>
+            <Link to="/Profile" style={{ color: "#0066cc", textDecoration: "none" }}>Profile</Link>
           </nav>
 
           <nav >
@@ -56,6 +59,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/index" element={<IndexPage />} />
+            <Route path="/Profile" element={<ProfilePage />} />
             <Route path="/product/:id" element={<ProductInfoPage />} />
             <Route path="/sell" element={<SellPage />} />
           </Routes>
