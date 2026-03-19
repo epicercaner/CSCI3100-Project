@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: %i[show update destroy]
+  before_action :set_user, only: [:show, :update, :destroy]
 
   # GET /users
   def index
@@ -17,46 +17,82 @@ class UsersController < ApplicationController
     render json: @user, status: :ok
   end
 
+  # ====== register section start ======
+
   # POST /users
   def create
+    # require: email, name, password, cuhk_id, hostel, is_seller
     user = User.new(user_params)
     if user.save
-      # generate a verification token (if not already generated) and send email
-      user.generate_verification_token! if user.verification_token.blank?
+      # generate a numeric OTP (if not already generated, prevent model bugs) and send email
+      user.generate_verification_otp! if user.verification_otp.blank?
       user.save if user.changed?
-      UserMailer.verification_email(user).deliver_later
-      render json: { user: user, message: 'verification_email_sent' }, status: :created
+      UserMailer.verification_email(user).deliver_later # app/mailers/user_mailer.rb, async
+      render json: { user: user.as_json(except: [:password_digest, 
+      :verification_otp, :verification_sent_at, :verification_token]), message: 'verification_email_sent' }, status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   # POST /users/register
-  # Alias to `create` for clarity when registering from the client
+  # specify the route name
   def register
     create
   end
 
-  # GET /users/verify?token=...
+  # POST /users/verify?otp=...&email=... (or POST with { email, otp })
   def verify
-    token = params[:token]
-    if token.blank?
-      render json: { error: 'token_missing' }, status: :bad_request
+    # Support OTP verification: accept email+otp
+    otp = params[:otp] 
+    email = params[:email]
+
+    if otp.blank?
+      render json: { error: 'otp_missing' }, status: :bad_request
       return
     end
 
-    user = User.find_by(verification_token: token)
+    user = if email.present?
+             User.find_by(email: email)
+           else
+             # fallback: find by otp
+             User.find_by(verification_otp: otp)
+           end
+
     if user.nil?
-      render json: { error: 'invalid_token' }, status: :not_found
+      render json: { error: 'invalid_otp_or_email' }, status: :not_found
       return
     end
 
-    if user.verify!(token)
+    if user.verify_otp!(otp)
       render json: { message: 'verified' }, status: :ok
     else
-      render json: { error: 'verification_failed' }, status: :unprocessable_entity
+      render json: { error: 'verification_failed_or_expired' }, status: :unprocessable_entity
     end
   end
+
+  # POST /users/resend_verification
+  def resend_verification
+    # Accepts { email: "..." }
+    email = params[:email].to_s.downcase
+    if email.blank?
+      render json: { message: 'verification_email_sent_if_needed' }, status: :ok
+      return
+    end
+
+    user = User.find_by(email: email)
+    if user && user.verified_at.nil?
+      # TODO: throttle resends (e.g., rack-attack) to prevent abuse => AI suggestion
+      user.generate_verification_otp!
+      user.save
+      UserMailer.verification_email(user).deliver_later
+    end
+
+    # Generic response to avoid account enumeration
+    render json: { message: 'verification_email_sent_if_needed' }, status: :ok
+  end
+
+  # ====== register section end ======
 
   # PATCH/PUT /users/:id
   def update
@@ -64,6 +100,19 @@ class UsersController < ApplicationController
       render json: @user, status: :ok
     else
       render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def change_password
+    user = User.find_by(email: params[:email])
+    if user && user.authenticate(params[:current_password])
+      if user.update(password: params[:new_password])
+        render json: { message: 'password_changed' }, status: :ok
+      else
+        render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      end
+    else
+      render json: { error: 'invalid_credentials' }, status: :unauthorized
     end
   end
 
@@ -76,7 +125,8 @@ class UsersController < ApplicationController
   private
 
   def set_user
-    @user = User.find(params[:id])
+    cuhk = params[:id].to_s.strip
+    @user = User.find_by!(cuhk_id: cuhk)
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'User not found' }, status: :not_found
   end

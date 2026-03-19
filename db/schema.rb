@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_18_022013) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_18_110140) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,15 +42,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_022013) do
     t.bigint "chat_id", null: false
     t.datetime "created_at", null: false
     t.text "message"
+    t.bigint "sender_id"
     t.datetime "updated_at", null: false
     t.index ["chat_id"], name: "index_messages_on_chat_id"
   end
 
   create_table "price_histories", force: :cascade do |t|
-    t.bigint "category_id", null: false
     t.datetime "date"
     t.decimal "price"
-    t.index ["category_id"], name: "index_price_histories_on_category_id"
+    t.bigint "product_id"
+    t.index ["product_id"], name: "index_price_histories_on_product_id"
   end
 
   create_table "products", force: :cascade do |t|
@@ -84,9 +85,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_022013) do
     t.float "seller_rating", default: 0.0, null: false
     t.integer "seller_review_count", default: 0, null: false
     t.datetime "updated_at", null: false
+    t.string "verification_otp"
+    t.datetime "verification_sent_at"
     t.string "verification_token"
     t.datetime "verified_at"
     t.index ["cuhk_id"], name: "index_users_on_cuhk_id", unique: true
+    t.index ["verification_otp"], name: "index_users_on_verification_otp"
     t.index ["verification_token"], name: "index_users_on_verification_token", unique: true
   end
 
@@ -96,7 +100,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_022013) do
   add_foreign_key "interests", "products", column: "item_id"
   add_foreign_key "interests", "users", column: "interested_id"
   add_foreign_key "messages", "chats"
-  add_foreign_key "price_histories", "categories"
+  add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "price_histories", "products"
   add_foreign_key "products", "categories"
   add_foreign_key "products", "users", column: "buyer_id"
   add_foreign_key "products", "users", column: "seller_id"

@@ -9,7 +9,11 @@ Rails.application.routes.draw do
       collection do
         get :sellers
         post :register
-        get :verify
+        # Support OTP verification via POST with { email, otp }
+        post :verify
+        post :resend_verification
+        # Allow changing password via POST /users/change_password
+        post :change_password
       end
     end
 
