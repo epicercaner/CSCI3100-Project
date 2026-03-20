@@ -8,7 +8,9 @@ class User < ApplicationRecord
 
     has_many :interests, class_name: 'Interest', foreign_key: 'interested_id', dependent: :destroy
     # Authentication, turn on after test
-    has_secure_password validations: false
+    # virtual attribute: password, handled by has_secure_password
+    # can be used by authenticate()
+    has_secure_password validations: true
 
     # Verification helpers (OTP)
     before_create :generate_verification_otp!
