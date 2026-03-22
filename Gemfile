@@ -60,6 +60,12 @@ group :development, :test do
   # SimpleCov for coverage metrics
   gem 'simplecov', require: false
 
+  # cloudinary for image upload
+  gem 'cloudinary'
+
+  # figaro for easy yml editing
+  gem "figaro"
+
 end
 
 group :development do
