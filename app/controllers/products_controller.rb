@@ -37,9 +37,6 @@ class ProductsController < ApplicationController
   def create
     product = Product.new(product_params)
     # Handle image uploads
-    if params[:images].present?
-      # leave here, finish it after implementing image upload
-    end
     if product.save
       render json: format_product(product), status: :created
     else

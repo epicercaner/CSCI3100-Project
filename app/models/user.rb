@@ -7,6 +7,8 @@ class User < ApplicationRecord
     has_many :buyer_chats, class_name: 'Chat', foreign_key: 'interested_id', dependent: :destroy
 
     has_many :interests, class_name: 'Interest', foreign_key: 'interested_id', dependent: :destroy
+
+    has_one_attached :profile_picture
     # Authentication, turn on after test
     # virtual attribute: password, handled by has_secure_password
     # can be used by authenticate()
