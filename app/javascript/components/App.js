@@ -1,7 +1,5 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import AboutPage from "./pages/AboutPage";
 import IndexPage from "./pages/IndexPage";
 import AccountPage from "./pages/AccountPage";
 import ProductInfoPage from "./pages/ProductInfoPage";
@@ -46,8 +44,6 @@ export default function App() {
             <h2>CUHK Second-hand Marketplace</h2>
             <p>Welcome to the centralized trading platform for students.</p>
             <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-              <h4>Search Products by:</h4>
-              <MarketplaceFilters />
               <Link 
                 to="/notifications" 
                 onMouseEnter={() => setIsNotiHovered(true)} 
@@ -104,6 +100,7 @@ export default function App() {
               >
                 Sell
               </Link>
+              <Link to="/Account" style={{ color: "#0066cc", textDecoration: "none" }}>Account</Link>
             </div>
           </nav>
         </header>
