@@ -15,8 +15,7 @@ class ProductsController < ApplicationController
     products = Product.all
     # basic search, not Fuzzy search
     if params[:q].present?
-      q = "%#{params[:q]}%"
-      products = products.where('name LIKE ? OR description LIKE ?', q, q)
+      products = products.search_by_name(params[:q])
     end
 
     products = products.limit(limit)
