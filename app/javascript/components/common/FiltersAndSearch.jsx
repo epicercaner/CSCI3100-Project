@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
+import { goodsTypes } from "../../common/productConstants";
 
 export default function FiltersAndSearch() {
   const [isCollegeOpen, setIsCollegeOpen] = useState(false);
@@ -58,16 +59,6 @@ export default function FiltersAndSearch() {
       name: "Lee Woo Sing",
       halls: ["Dorothy and Ti-Hua KOO Building", "North Block"],
     },
-  ];
-
-  const goodsTypes = [
-    "Textbooks & Notes",
-    "Electronics & Gadgets",
-    "Furniture & Home",
-    "Clothing & Accessories",
-    "Stationery & Supplies",
-    "Snacks & Food",
-    "Others",
   ];
 
   const getSearchUrl = () => {
