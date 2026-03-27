@@ -13,9 +13,20 @@ class Product < ApplicationRecord
     validates :price, presence: true, numericality: { greater_than_or_equal_to: 0 }
     validates :seller_id, presence: true
     validates :buyer_id, presence: true
+
+    after_save :record_price_history, if: :saved_change_to_price? 
   
     include PgSearch::Model
 
     pg_search_scope :search_by_name, against: :name, using: { trigram: { threshold: 0.2 } }
     # Adjust the threshold from 0 to 1 for strictness
+
+    private
+
+    def record_price_history
+        price_histories.create!(
+            date: Time.current,
+            price: price
+        )
+    end
 end
