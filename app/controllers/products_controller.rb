@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   # attributes to include when rendering product JSON, %i mean ":" for all items
-  PRODUCT_JSON_ONLY = %i[id name description price seller_id buyer_id status category_id location contact created_at updated_at].freeze
+  PRODUCT_JSON_ONLY = %i[id name description price seller_id buyer_id status category_id location contact condition created_at updated_at].freeze
 
   # directly get the product list
   before_action :set_product, only: %i[show update destroy]
@@ -146,7 +146,7 @@ class ProductsController < ApplicationController
   def product_params
     params.require(:product).permit(
       %i[name description price seller_id category_id location 
-      contact status buyer_id])
+      contact status condition buyer_id])
   end
 
   # logger for error (just for safety)
@@ -168,6 +168,7 @@ class ProductsController < ApplicationController
       category_id: product.category_id,
       location: product.location,
       contact: product.contact,
+      condition: product.condition,
       images: product.image.map { |img| safe_url_for(img) }.compact,
       created_at: product.created_at,
       updated_at: product.updated_at
