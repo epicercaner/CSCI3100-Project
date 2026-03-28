@@ -5,7 +5,7 @@
   - returns success with user data
   - returns correct status (created/201)
   - returns user data without sensitive information
-  - returns user with correct attributes (id, email, name, cuhk_id, hostel, is_seller)
+  - returns user with correct attributes (id, email, name, cuhk_id, hostel, is_admin)
   - returns message 'logged_in'
   - does not expose sensitive information (password_digest, verification_otp, verification_sent_at)
   - sets session cookie for authentication

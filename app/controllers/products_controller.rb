@@ -106,8 +106,8 @@ class ProductsController < ApplicationController
   end
 
   # GET /products/:id/price_history
-  # Returns a simple synthetic price history as an array of prices only.
-  # Query param `points` controls number of data points (default 10).
+  # Returns price history records for a product.
+  # Query param `points` controls number of data points (default 10, max 20).
   def price_history
     product_id = params[:product_id] || params[:id]
     unless product_id.present?
@@ -122,10 +122,13 @@ class ProductsController < ApplicationController
     # maximum 20 points
     points = [points, 20].min
 
-    # leave blank since haven't implement price history model
-    prices = []
+    # Fetch price history records, ordered by date descending (most recent first)
+    price_histories = product.price_histories.order(date: :desc).limit(points)
 
-    render json: { product_id: product.id, prices: prices }
+    render json: { 
+      product_id: product.id, 
+      prices: price_histories.map { |ph| ph.price }
+    }, status: :ok
   rescue StandardError => e
     render_error(e)
   end

@@ -32,7 +32,7 @@ export default api;
 - `user[password]`: string
 - `user[cuhk_id]`: string
 - `user[hostel]`: string
-- `user[is_seller]`: boolean
+- `user[is_admin]`: boolean
 
 **Example:**
 ```javascript
