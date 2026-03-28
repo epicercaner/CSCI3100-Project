@@ -120,14 +120,14 @@
 
 ## Account State
 - newly registered user
-  - is_seller: false (by default)
+  - is_admin: false (by default)
   - verified_at: nil
   - profile_picture: not attached
   - has valid CUHK ID from email
   - seller_rating: 0 (default)
 - after verification
   - verified_at: present (timestamp)
-  - can access seller features if is_seller: true
+  - can access admin features if is_admin: true
   - can login successfully
   - can access protected endpoints
 

@@ -13,8 +13,8 @@ email (Required) \
 `User's email, used mainly for verification.` \
 hostel (Optional) \
 `User's hostel, used for further recommendation.` \
-is_seller (Required) \
-`checks if the user is a seller.` \
+is_admin (Required) \
+`checks if the user is an admin.` \
 name (Required) \
 `User's username.` \
 password_digest (Required) \

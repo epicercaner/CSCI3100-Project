@@ -881,7 +881,7 @@ RSpec.describe 'Products API', type: :request do
         get price_history_products_path, params: { product_id: product.id }
         expect(response).to have_http_status(:ok)
         response_data = JSON.parse(response.body)
-        # Currently prices array is empty (not implemented), but endpoint should work
+        # Price history is returned from the record_price_history callback on product creation
         expect(response_data['prices']).to be_an(Array)
       end
 
@@ -938,10 +938,11 @@ RSpec.describe 'Products API', type: :request do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'returns empty prices array (price history not yet implemented)' do
+      it 'returns prices array with actual price history' do
         get price_history_products_path, params: { product_id: product.id }
         response_data = JSON.parse(response.body)
-        expect(response_data['prices']).to eq([])
+        # Price history is created by the after_save callback on product creation
+        expect(response_data['prices']).to include("100.0")
       end
 
       it 'accepts id as query parameter (fallback to product_id)' do
