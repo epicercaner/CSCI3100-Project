@@ -1,5 +1,6 @@
 # Login and logout actions for user sessions
 class SessionsController < ApplicationController
+  skip_before_action :verify_authenticity_token  # API endpoints don't need CSRF protection
   # POST /sessions (login)
   def create
     user = User.find_by(email: params[:email])

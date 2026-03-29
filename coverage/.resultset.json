@@ -21,6 +21,7 @@
           1,
           1,
           1,
+          1,
           null,
           null,
           null,
@@ -161,6 +162,10 @@
           1,
           null,
           13,
+          null,
+          null,
+          1,
+          26,
           null,
           null,
           1,
@@ -341,6 +346,7 @@
           1,
           1,
           1,
+          1,
           null,
           null,
           null,
@@ -450,6 +456,7 @@
       },
       "/home/wilson/CSCI3100-Project-Forked/app/controllers/products_controller.rb": {
         "lines": [
+          1,
           1,
           null,
           1,
@@ -655,6 +662,7 @@
           1,
           1,
           1,
+          1,
           null,
           null,
           null,
@@ -799,7 +807,14 @@
           null,
           1,
           28,
+          null,
           28,
+          null,
+          0,
+          null,
+          null,
+          28,
+          null,
           null,
           3,
           null,
@@ -853,6 +868,7 @@
       "/home/wilson/CSCI3100-Project-Forked/app/controllers/sessions_controller.rb": {
         "lines": [
           null,
+          1,
           1,
           null,
           1,
@@ -924,6 +940,6 @@
         "branches": {}
       }
     },
-    "timestamp": 1774702274
+    "timestamp": 1774765851
   }
 }

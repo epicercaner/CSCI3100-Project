@@ -1,4 +1,5 @@
 class UsersController < ApplicationController
+  skip_before_action :verify_authenticity_token  # API endpoints don't need CSRF protection
   before_action :set_user, only: [:show, :update, :destroy]
   before_action :authenticate_user!, only: [:update, :destroy, :change_password]
   before_action :authorize_user_owner!, only: [:update, :destroy]
@@ -145,8 +146,15 @@ class UsersController < ApplicationController
   end
 
   def set_user
-    cuhk = params[:id].to_s.strip
-    @user = User.find_by!(cuhk_id: cuhk)
+    id_param = params[:id].to_s.strip
+    # Try to find by database ID first, then by CUHK ID
+    @user = if id_param.match?(/^\d+$/) && id_param.to_i < 1000000
+              # Looks like a database ID
+              User.find_by!(id: id_param.to_i)
+            else
+              # Treat as CUHK ID
+              User.find_by!(cuhk_id: id_param)
+            end
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'User not found' }, status: :not_found
   end
