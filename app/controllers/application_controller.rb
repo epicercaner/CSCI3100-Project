@@ -11,9 +11,13 @@ class ApplicationController < ActionController::Base
     @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
   end
 
+  def is_json_request?
+    request.format.json? || request.content_type.to_s.include?('application/json')
+  end
+
   def authenticate_user!
     return if current_user
-    if request.format.json?
+    if is_json_request?
       render json: { error: 'unauthenticated' }, status: :unauthorized
     else
       redirect_to root_path, alert: 'Please log in'
@@ -28,7 +32,7 @@ class ApplicationController < ActionController::Base
   end
 
   def render_unauthorized
-    if request.format.json?
+    if is_json_request?
       render json: { error: 'unauthorized' }, status: :forbidden
     else
       redirect_to root_path, alert: 'You do not have permission to access this resource'

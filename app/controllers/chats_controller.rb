@@ -1,6 +1,7 @@
 # message => chat => output
 # reference: https://medium.com/@reinteractivehq/adding-an-ai-chat-to-your-ruby-on-rails-application-58f5c943182b
 class ChatsController < ApplicationController
+  skip_before_action :verify_authenticity_token  # API endpoints don't need CSRF protection
   before_action :authenticate_user!
   before_action :set_chat, only: [:show]
   before_action :authorize_chat_participant!, only: [:show]

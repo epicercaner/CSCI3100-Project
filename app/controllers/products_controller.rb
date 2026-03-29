@@ -1,4 +1,5 @@
 class ProductsController < ApplicationController
+  skip_before_action :verify_authenticity_token  # API endpoints don't need CSRF protection
   # attributes to include when rendering product JSON, %i mean ":" for all items
   PRODUCT_JSON_ONLY = %i[id name description price seller_id buyer_id status category_id location contact condition created_at updated_at].freeze
 

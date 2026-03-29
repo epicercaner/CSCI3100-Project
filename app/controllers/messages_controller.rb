@@ -1,4 +1,5 @@
 class MessagesController < ApplicationController
+  skip_before_action :verify_authenticity_token  # API endpoints don't need CSRF protection
   before_action :set_chat, only: [:index, :create, :show, :destroy]
   before_action :set_message, only: [:show, :destroy]
   before_action :authenticate_user!
