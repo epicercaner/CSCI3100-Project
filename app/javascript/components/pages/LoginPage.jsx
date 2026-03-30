@@ -1,116 +1,80 @@
 import React, { useState } from "react";
+import { loginUser } from "../../common/loginauth";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showOtpPopup, setShowOtpPopup] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLoginSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
-    setShowOtpPopup(true);
+    setLoading(true);
+
+    try {
+      const data = await loginUser(email, password);
+      
+      if (data.message === 'logged_in') {
+        alert("Login Success!");
+        // 將使用者資訊存入 localStorage，方便前端顯示頭像或名稱
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+        // 跳轉到首頁
+        window.location.href = "/"; 
+      }
+    } catch (error) {
+      console.error("Login Error:", error.response?.data);
+      const errorMsg = error.response?.data?.error || "Invalid email or password";
+      
+      if (errorMsg === 'email_not_verified') {
+        alert("Your email is not verified. Please check your inbox for the OTP.");
+      } else {
+        alert("Login Failed: " + errorMsg);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVerifyOtp = (e) => {
-    e.preventDefault();
-    console.log("Verifying OTP:", otp);
-    alert("驗證成功！");
-    setShowOtpPopup(false);
-  };
-
-  const modalStyle = {
-    position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000
-  };
-
-  const cardStyle = {
-    backgroundColor: "white",
-    padding: "2rem",
-    borderRadius: "12px",
-    width: "300px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "10px",
-    margin: "10px 0",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
-    boxSizing: "border-box"
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "10px",
-    backgroundColor: "#e60000",
-    color: "white",
-    border: "none",
-    borderRadius: "20px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    marginTop: "10px"
-  };
+  // 樣式設定 (與 RegisterPage 保持一致)
+  const inputStyle = { width: "100%", padding: "12px", margin: "10px 0", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" };
+  const buttonStyle = { width: "100%", padding: "12px", backgroundColor: "#702082", color: "white", border: "none", borderRadius: "25px", fontWeight: "bold", cursor: "pointer", marginTop: "15px" };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "40px auto", textAlign: "center" }}>
-      <h2>Log In</h2>
-      <form onSubmit={handleLoginSubmit}>
+    <div style={{ maxWidth: "400px", margin: "60px auto", padding: "2rem", border: "1px solid #eee", borderRadius: "15px", textAlign: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
+      <h2 style={{ color: "#702082" }}>CUHK Marketplace</h2>
+      <p style={{ color: "#666", marginBottom: "20px" }}>Sign in to continue</p>
+      
+      <form onSubmit={handleLogin}>
+        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold" }}>CUHK Email</div>
         <input
           style={inputStyle}
           type="email"
-          placeholder="Login Email"
+          placeholder="1155xxxxxx@link.cuhk.edu.hk"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+
+        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>Password</div>
         <input
           style={inputStyle}
           type="password"
-          placeholder="Password"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" style={buttonStyle}>Enter</button>
+
+        <button type="submit" style={buttonStyle} disabled={loading}>
+          {loading ? "Authenticating..." : "Login"}
+        </button>
       </form>
 
-      {/* 驗證碼彈窗 (Verification Pop-up) */}
-      {showOtpPopup && (
-        <div style={modalStyle}>
-          <div style={cardStyle}>
-            <h3>Verify Code</h3>
-            <p style={{ fontSize: "0.9rem", color: "#666" }}>
-              Please enter the code sent to your email.
-            </p>
-            <form onSubmit={handleVerifyOtp}>
-              <input
-                style={inputStyle}
-                type="text"
-                placeholder="6-digit code"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                maxLength="6"
-                required
-              />
-              <button type="submit" style={buttonStyle}>Verify</button>
-              <button 
-                type="button" 
-                onClick={() => setShowOtpPopup(false)}
-                style={{ ...buttonStyle, backgroundColor: "#ccc", marginTop: "5px" }}
-              >
-                Cancel
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <div style={{ marginTop: "20px", fontSize: "0.9rem" }}>
+        <span>New student? </span>
+        <a href="/register" style={{ color: "#e60000", textDecoration: "none", fontWeight: "bold" }}>Create an account</a>
+      </div>
     </div>
   );
 };
