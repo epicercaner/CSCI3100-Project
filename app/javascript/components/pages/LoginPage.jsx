@@ -1,62 +1,62 @@
 import React, { useState } from "react";
+import { loginUser } from "../../common/loginauth";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState(""); // 改為 username
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLoginSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // 這裡實作登入邏輯
-    console.log("Login attempt:", { username, password });
-    alert(`嘗試登入：${username}`);
+    setLoading(true);
+
+    try {
+      const data = await loginUser(email, password);
+      
+      if (data.message === 'logged_in') {
+        alert("Login Success!");
+        // 將使用者資訊存入 localStorage，方便前端顯示頭像或名稱
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+        // 跳轉到首頁
+        window.location.href = "/"; 
+      }
+    } catch (error) {
+      console.error("Login Error:", error.response?.data);
+      const errorMsg = error.response?.data?.error || "Invalid email or password";
+      
+      if (errorMsg === 'email_not_verified') {
+        alert("Your email is not verified. Please check your inbox for the OTP.");
+      } else {
+        alert("Login Failed: " + errorMsg);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const inputStyle = {
-    width: "100%",
-    padding: "12px",
-    margin: "10px 0",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    boxSizing: "border-box",
-    fontSize: "1rem"
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#0066cc", // 改用藍色區分登入與 Sell
-    color: "white",
-    border: "none",
-    borderRadius: "25px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    marginTop: "20px",
-    fontSize: "1rem"
-  };
+  // 樣式設定 (與 RegisterPage 保持一致)
+  const inputStyle = { width: "100%", padding: "12px", margin: "10px 0", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" };
+  const buttonStyle = { width: "100%", padding: "12px", backgroundColor: "#702082", color: "white", border: "none", borderRadius: "25px", fontWeight: "bold", cursor: "pointer", marginTop: "15px" };
 
   return (
-    <div style={{ 
-      maxWidth: "350px", 
-      margin: "80px auto", 
-      padding: "2rem", 
-      border: "1px solid #eee", 
-      borderRadius: "15px",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-      textAlign: "center" 
-    }}>
-      <h2 style={{ marginBottom: "1.5rem" }}>Login</h2>
-      <form onSubmit={handleLoginSubmit}>
-        <div style={{ textAlign: "left", marginBottom: "5px", fontSize: "0.9rem", fontWeight: "bold" }}>User Name</div>
+    <div style={{ maxWidth: "400px", margin: "60px auto", padding: "2rem", border: "1px solid #eee", borderRadius: "15px", textAlign: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
+      <h2 style={{ color: "#702082" }}>CUHK Marketplace</h2>
+      <p style={{ color: "#666", marginBottom: "20px" }}>Sign in to continue</p>
+      
+      <form onSubmit={handleLogin}>
+        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold" }}>CUHK Email</div>
         <input
           style={inputStyle}
-          type="text"
-          placeholder="Enter your username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          placeholder="1155xxxxxx@link.cuhk.edu.hk"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
-        
-        <div style={{ textAlign: "left", marginBottom: "5px", marginTop: "10px", fontSize: "0.9rem", fontWeight: "bold" }}>Password</div>
+
+        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>Password</div>
         <input
           style={inputStyle}
           type="password"
@@ -65,13 +65,16 @@ const LoginPage = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        
-        <button type="submit" style={buttonStyle}>Enter</button>
+
+        <button type="submit" style={buttonStyle} disabled={loading}>
+          {loading ? "Authenticating..." : "Login"}
+        </button>
       </form>
-      
-      <p style={{ marginTop: "1.5rem", fontSize: "0.85rem", color: "#666" }}>
-        New user? <a href="/register" style={{ color: "#0066cc", textDecoration: "none" }}>Register an account</a>
-      </p>
+
+      <div style={{ marginTop: "20px", fontSize: "0.9rem" }}>
+        <span>New student? </span>
+        <a href="/register" style={{ color: "#e60000", textDecoration: "none", fontWeight: "bold" }}>Create an account</a>
+      </div>
     </div>
   );
 };
