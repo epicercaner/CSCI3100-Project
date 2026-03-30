@@ -8,6 +8,8 @@ import NotificationPage from "./pages/NotificationPage";
 import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
 
+const logo = "/logo.png";
+
 const MailIcon = () => (
   <svg
     width="18"
@@ -63,13 +65,14 @@ export default function App() {
   return (
     <BrowserRouter>
       <div style={{ padding: "1rem", fontFamily: "system-ui, sans-serif" }}>
-        <header style={{ marginBottom: "1rem" }}>
-          <nav>
-            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-              <div style={{ cursor: "pointer" }}>
-                <h2>CUHK Second-hand Marketplace</h2>
-                <p>Welcome to the centralized trading platform for students.</p>
+        <header>
+          <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Link to="/" style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: "0.8rem" }}>
+              <div style={{ cursor: "pointer", color: "#530662", display: "flex", justifyContent: "center", alignItems: "center", gap: "0.8rem" }}>
+                <img src={logo} alt="logo" style={{ height: "3.8em", width: "auto", display: "block" }}/>
+                <h2 style={{ fontWeight: "900", margin: 0, lineHeight: "1" }}>CUHK Second-hand Marketplace</h2>
               </div>
+              {/* <p style={{ marginBottom: "0", fontWeight: "bold", cursor: "pointer", color: "#530662" }}>Welcome to the centralized trading platform for students.</p> */}
             </Link>
 
             <div
@@ -77,7 +80,6 @@ export default function App() {
                 display: "flex",
                 gap: "0.8rem",
                 alignItems: "center",
-                marginTop: "1rem",
               }}
             >
               <Link
