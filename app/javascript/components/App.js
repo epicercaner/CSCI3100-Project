@@ -20,9 +20,17 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NavButton from "./common/NavButton";
 
+const logo = "/logo.png";
+
 const AppContainer = styled.div`
   padding: 2rem;
   font-family: system-ui, sans-serif;
+`;
+
+const LogoImg = styled.img`
+  height: 3.8em;
+  width: auto;
+  display: block;
 `;
 
 const Header = styled.header`
@@ -31,13 +39,18 @@ const Header = styled.header`
 
 const Nav = styled.nav`
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   gap: 1.2rem;
 `;
 
 const BrandLink = styled(Link)`
   text-decoration: none;
-  color: inherit;
+  color: #530662;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
 `;
 
 const BrandContent = styled.div`
@@ -48,6 +61,9 @@ const BrandContent = styled.div`
 
 const Title = styled.h2`
   margin: 0;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
 `;
 
 const Subtitle = styled.p`
@@ -92,12 +108,13 @@ export default function App() {
         <Header>
           <Nav>
             <BrandLink to="/">
-              <BrandContent>
+              <LogoImg src={logo} alt="logo" />
+              {/* <BrandContent> */}
                 <Title>CUHK Second-hand Marketplace</Title>
-                <Subtitle>
+                {/* <Subtitle>
                   A centralized trading platform for CUHK students.
-                </Subtitle>
-              </BrandContent>
+                </Subtitle> */}
+              {/* </BrandContent> */}
             </BrandLink>
             <NavRow>
               {homeItem && <NavButton {...homeItem} />}
