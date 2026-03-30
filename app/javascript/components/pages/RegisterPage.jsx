@@ -1,149 +1,261 @@
 import React, { useState } from "react";
+import { registerUser, verifyToken } from "../../common/register";
 
 const RegisterPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formFields, setFormFields] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    hostel: "",
+  });
+  const [status, setStatus] = useState({ message: "", type: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtpPopup, setShowOtpPopup] = useState(false);
   const [otp, setOtp] = useState("");
-
-  const handleRegisterSubmit = (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-    // 檢查是否為 CUHK Email (簡單範例)
-    if (!email.endsWith("@link.cuhk.edu.hk") && !email.endsWith("@cuhk.edu.hk")) {
-      alert("Please use a valid CUHK Email address.");
-      return;
-    }
-    
-    console.log("Registering with:", { email, password });
-    // 這裡通常會呼叫後端 API 寄送驗證碼
-    setShowOtpPopup(true); 
-  };
-
-  const handleVerifyOtp = (e) => {
-    e.preventDefault();
-    console.log("Verifying OTP:", otp);
-    alert("Registration Successful! Welcome to CUHK Marketplace.");
-    setShowOtpPopup(false);
-    // 註冊成功後通常會導向登入頁或主頁
-    window.location.href = "/login";
-  };
-
-  // 樣式設定
-  const containerStyle = {
-    maxWidth: "400px",
-    margin: "60px auto",
-    padding: "2rem",
-    border: "1px solid #eee",
-    borderRadius: "15px",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-    textAlign: "center"
-  };
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const inputStyle = {
     width: "100%",
-    padding: "12px",
-    margin: "10px 0",
+    padding: "0.9rem",
+    marginBottom: "0.9rem",
     borderRadius: "8px",
-    border: "1px solid #ddd",
-    boxSizing: "border-box"
+    border: "1px solid #d1d5db",
+    fontSize: "0.95rem",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
   };
 
   const buttonStyle = {
     width: "100%",
-    padding: "12px",
-    backgroundColor: "#e60000",
-    color: "white",
+    padding: "0.9rem",
+    borderRadius: "14px",
     border: "none",
-    borderRadius: "25px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    marginTop: "15px",
-    fontSize: "1rem"
+    backgroundColor: "#e60000",
+    color: "#ffffff",
+    fontWeight: 600,
+    cursor: isSubmitting || isVerifying ? "not-allowed" : "pointer",
+    fontSize: "1rem",
+    transition: "transform 0.2s ease",
   };
 
   const modalOverlayStyle = {
     position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: "rgba(0,0,0,0.6)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000
+    zIndex: 1000,
+  };
+
+    //   Handle input changes for all form fields
+    //  (...prev: is a placeholder for the previous state,
+    //  [field]: event.target.value updates the specific field that changed)
+  const handleChange = (field) => (event) => {
+    setFormFields((prev) => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (formFields.password !== formFields.confirmPassword) {
+      setStatus({ message: "Passwords do not match!", type: "error" });
+      return;
+    }
+
+    if (
+      !formFields.email.endsWith("@link.cuhk.edu.hk") &&
+      !formFields.email.endsWith("@cuhk.edu.hk")
+    ) {
+      setStatus({ message: "Please use a valid CUHK Email address.", type: "error" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatus({ message: "", type: "" });
+
+    try {
+      const response = await registerUser(formFields);
+      setStatus({
+        message: response?.email
+          ? `Registered ${response.email}. Please verify with the OTP.`
+          : "Registered successfully. Please verify with the OTP.",
+        type: "success",
+      });
+      setShowOtpPopup(true);
+    } catch (error) {
+      console.error("Register failed", error);
+      const errorText =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Registration failed. Please try again.";
+      setStatus({ message: errorText, type: "error" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async (event) => {
+    event.preventDefault();
+    setIsVerifying(true);
+    setStatus({ message: "", type: "" });
+
+    try {
+      // The backend expects { email, otp } in a POST request
+      await verifyToken({ email: formFields.email, otp });
+      alert("Registration Successful! Welcome to CUHK Marketplace.");
+      setShowOtpPopup(false);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Verification failed", error);
+      const errorText =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Verification failed. Please check your OTP.";
+      setStatus({ message: errorText, type: "error" });
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
-    <div style={containerStyle}>
-      <h2 style={{ color: "#702082" }}>Create Account</h2>
-      <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "1.5rem" }}>
-        Join our CUHK student community
+    <div
+      style={{
+        maxWidth: "460px",
+        margin: "40px auto",
+        padding: "2rem",
+        borderRadius: "20px",
+        boxShadow: "0 25px 40px rgba(15, 23, 42, 0.12)",
+        background: "#ffffff",
+      }}
+    >
+      <h2 style={{ marginBottom: "0.4rem" }}>Create an Account</h2>
+      <p style={{ marginTop: 0, color: "#475569", fontSize: "0.95rem" }}>
+        Register with your CUHK email and we will send you an OTP to finish the verification.
       </p>
-
-      <form onSubmit={handleRegisterSubmit}>
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold" }}>CUHK Email</div>
+      <form onSubmit={handleSubmit}>
+        <input
+          style={inputStyle}
+          type="text"
+          placeholder="Your full name"
+          value={formFields.name}
+          onChange={handleChange("name")}
+          required
+        />
         <input
           style={inputStyle}
           type="email"
-          placeholder="yourname@link.cuhk.edu.hk"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="CUHK email"
+          value={formFields.email}
+          onChange={handleChange("email")}
           required
         />
-
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>Password</div>
         <input
           style={inputStyle}
           type="password"
-          placeholder="Min 8 characters"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password (min 6 characters)"
+          value={formFields.password}
+          onChange={handleChange("password")}
+          minLength={6}
           required
         />
-
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>Confirm Password</div>
         <input
           style={inputStyle}
           type="password"
-          placeholder="Re-enter password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm Password"
+          value={formFields.confirmPassword}
+          onChange={handleChange("confirmPassword")}
+          minLength={6}
           required
         />
-
-        <button type="submit" style={buttonStyle}>Register Now</button>
+        <input
+          style={inputStyle}
+          type="text"
+          placeholder="Hostel (optional)"
+          value={formFields.hostel}
+          onChange={handleChange("hostel")}
+        />
+        <button type="submit" style={buttonStyle} disabled={isSubmitting}>
+          {isSubmitting ? "Registering..." : "Register"}
+        </button>
       </form>
+      {status.message && !showOtpPopup && (
+        <div
+          style={{
+            marginTop: "1.1rem",
+            color: status.type === "error" ? "#b91c1c" : "#047857",
+            fontWeight: 600,
+            fontSize: "0.95rem",
+          }}
+        >
+          {status.message}
+        </div>
+      )}
 
-      {/* 驗證碼彈窗 (Verification Pop-up) */}
+      {/* Verification Pop-up */}
       {showOtpPopup && (
         <div style={modalOverlayStyle}>
-          <div style={{ backgroundColor: "white", padding: "2.5rem", borderRadius: "15px", width: "320px", textAlign: "center" }}>
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "2.5rem",
+              borderRadius: "15px",
+              width: "360px",
+              textAlign: "center",
+              boxShadow: "0 25px 50px rgba(0, 0, 0, 0.2)",
+            }}
+          >
             <h3 style={{ marginTop: 0 }}>Verify Your Email</h3>
             <p style={{ fontSize: "0.85rem", color: "#555" }}>
-              We've sent a 6-digit code to <strong>{email}</strong>
+              We've sent a code to <strong>{formFields.email}</strong>. Please enter the OTP to finish registration.
             </p>
+
             <form onSubmit={handleVerifyOtp}>
               <input
-                style={{ ...inputStyle, textAlign: "center", fontSize: "1.5rem", letterSpacing: "5px" }}
+                style={{
+                  ...inputStyle,
+                  textAlign: "center",
+                  fontSize: "1.5rem",
+                  letterSpacing: "4px",
+                }}
                 type="text"
-                placeholder="000000"
+                placeholder="OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                maxLength="6"
                 required
               />
-              <button type="submit" style={buttonStyle}>Confirm & Finish</button>
-              <button 
-                type="button" 
-                onClick={() => setShowOtpPopup(false)}
-                style={{ background: "none", border: "none", color: "#666", marginTop: "15px", cursor: "pointer", textDecoration: "underline" }}
+              <button type="submit" style={buttonStyle} disabled={isVerifying}>
+                {isVerifying ? "Verifying..." : "Confirm & Finish"}
+              </button>
+              {status.message && status.type === "error" && (
+                <div style={{ color: "#b91c1c", marginTop: "10px", fontSize: "0.85rem" }}>
+                  {status.message}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowOtpPopup(false);
+                  setStatus({ message: "", type: "" });
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#666",
+                  marginTop: "15px",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontSize: "0.9rem",
+                }}
               >
                 Back to Edit
               </button>
             </form>
+            
           </div>
         </div>
       )}
