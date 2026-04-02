@@ -31,7 +31,7 @@ class ProductsController < ApplicationController
     end 
 
     if params[:type].present?
-      products = products.joins(:category).where(categories: { name: params[:type] })
+      products = products.joins(:category).where(categories: { category_name: params[:type] })
     end
 
     total_count = products.count
