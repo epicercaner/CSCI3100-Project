@@ -56,19 +56,12 @@ class ProductsController < ApplicationController
   # show a single product
   # in product info page
   def show
+    @product = Product.with_attached_images.find(params[:id])
+
     product_data = @product.as_json(only: PRODUCT_JSON_ONLY)
 
     product_data["images"] = if @product.images.attached?
-                               @product.images.map do |attachment|
-                               begin
-                                 # Try Cloudinary-specific way
-                                 Cloudinary::Utils.cloudinary_url(attachment.blob.key, 
-                                   cloud_name: Rails.application.config.active_storage.service == :cloudinary ? 
-                                     Rails.application.credentials.dig(:cloudinary, :cloud_name) : nil)
-                               rescue
-                                 url_for(attachment)  # fallback
-                               end
-                             end
+                               @product.images.map { |a| rails_blob_url(a) }
                              else
                                []
                              end
