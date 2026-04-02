@@ -94,8 +94,7 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  Rails.application.routes.default_url_options[:host] = ENV['HEROKU_APP_NAME'] ? 
-  "#{ENV['HEROKU_APP_NAME']}.herokuapp.com" : "your-custom-domain.com"
+  Rails.application.routes.default_url_options[:host] = csci3100-project-25spring-d069c5b80a72.herokuapp.com/
 
   Rails.application.routes.default_url_options[:protocol] = "https"
 end
