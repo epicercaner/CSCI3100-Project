@@ -1,9 +1,158 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import styled from "styled-components";
 import { FaSearch, FaTimes, FaUndo } from "react-icons/fa";
 import { goodsTypes } from "../../common/productConstants";
 import { colleges } from "../../common/collegeConstants";
 
+const SearchBarContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  padding: 8px 10px;
+  background-color: white;
+  box-sizing: border-box;
+`;
+
+const DropdownWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const DropdownToggleButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background-color: ${(props) => (props.$isOpen ? "#f5f5f5" : "white")};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
+const DropdownPanel = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  display: ${(props) => (props.$isBlock ? "block" : "flex")};
+  flex-direction: ${(props) => (props.$isBlock ? "column" : "row")};
+  gap: ${(props) => (props.$isBlock ? "0" : "2rem")};
+  padding: 1.5rem;
+  z-index: 1000;
+  min-width: ${(props) => props.$minWidth || "auto"};
+`;
+
+const DropdownColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: ${(props) => props.$minWidth || "180px"};
+`;
+
+const ColumnTitle = styled.div`
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #888;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+`;
+
+const OptionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  padding: ${(props) => (props.$isHall ? "4px 0 4px 18px" : "4px 0")};
+  font-size: ${(props) => (props.$isHall ? "0.9rem" : "0.95rem")};
+  color: ${(props) => {
+    if (props.$isActive) return "#9e0ebb";
+    if (props.$isHall) return "#555";
+    return "#333";
+  }};
+  font-weight: ${(props) => (props.$isActive ? "bold" : "normal")};
+`;
+
+const ResetButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background-color: #ffe6e6;
+    color: #e60000;
+  }
+`;
+
+const SearchInputWrapper = styled.div`
+  position: relative;
+  flex: 1;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 10px 140px 10px 16px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  background-color: transparent;
+  box-sizing: border-box;
+`;
+
+const ClearButton = styled.button`
+  position: absolute;
+  right: 110px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+
+  &:hover {
+    color: #555;
+  }
+`;
+
+const SubmitSearchButton = styled.button`
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #2563eb;
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  border: none;
+`;
 
 export default function FiltersAndSearch() {
   const navigate = useNavigate();
@@ -42,117 +191,28 @@ export default function FiltersAndSearch() {
     setSearchKeywords("");
   };
 
-  const panelStyle = {
-    position: "absolute",
-    top: "100%",
-    left: "0",
-    backgroundColor: "white",
-    border: "1px solid #ddd",
-    boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
-    borderRadius: "8px",
-    display: "flex",
-    gap: "2rem",
-    padding: "1.5rem",
-    zIndex: 1000,
-  };
-
-  const columnStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-    minWidth: "180px",
-  };
-
-  const titleStyle = {
-    fontSize: "0.9rem",
-    fontWeight: "bold",
-    color: "#888",
-    marginBottom: "0.5rem",
-    borderBottom: "1px solid #eee",
-    paddingBottom: "5px",
-  };
-
-  const linkButtonStyle = {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    textAlign: "left",
-    width: "100%",
-    padding: "4px 0",
-    color: "#333",
-    fontSize: "0.95rem",
-  };
-
-  const activeItemStyle = {
-    fontWeight: "bold",
-    color: "#9e0ebb",
-  };
-
-  const hallStyle = {
-    ...linkButtonStyle,
-    paddingLeft: "18px",
-    fontSize: "0.9rem",
-    color: "#555",
-  };
-
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-        width: "100%",
-        border: "1px solid #ddd",
-        borderRadius: "25px",
-        padding: "8px 10px",
-        backgroundColor: "white",
-        boxSizing: "border-box",
-      }}
-    >
-      <div
-        style={{ position: "relative", display: "inline-block" }}
+    <SearchBarContainer>
+      <DropdownWrapper
         onMouseEnter={() => setIsCollegeOpen(true)}
         onMouseLeave={() => setIsCollegeOpen(false)}
       >
-        <button
-          style={{
-            padding: "8px 16px",
-            borderRadius: "20px",
-            border: "1px solid #ddd",
-            backgroundColor: isCollegeOpen ? "#f5f5f5" : "white",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-          }}
-        >
+        <DropdownToggleButton $isOpen={isCollegeOpen}>
           {selectedCollege
             ? selectedHall
               ? `${selectedCollege} (${selectedHall})`
               : selectedCollege
             : "College"}{" "}
           <span>{isCollegeOpen ? "▴" : "▾"}</span>
-        </button>
+        </DropdownToggleButton>
 
         {isCollegeOpen && (
-          <div
-            style={{
-              ...panelStyle,
-              minWidth: selectedCollege ? "420px" : "260px",
-              display: "flex",
-              flexDirection: "row",
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              gap: "2rem",
-              padding: "1.5rem",
-            }}
-          >
-            <div style={{ ...columnStyle, minWidth: "160px" }}>
-              <div style={titleStyle}>COLLEGE</div>
+          <DropdownPanel $minWidth={selectedCollege ? "420px" : "260px"}>
+            <DropdownColumn $minWidth="160px">
+              <ColumnTitle>COLLEGE</ColumnTitle>
               {colleges.map(function (college) {
                 return (
-                  <button
+                  <OptionButton
                     key={college.name}
                     onClick={function () {
                       if (selectedCollege === college.name) {
@@ -163,31 +223,26 @@ export default function FiltersAndSearch() {
                         setSelectedHall(null);
                       }
                     }}
-                    style={{
-                      ...linkButtonStyle,
-                      ...(selectedCollege === college.name
-                        ? activeItemStyle
-                        : {}),
-                    }}
+                    $isActive={selectedCollege === college.name}
                   >
                     {college.name}
-                  </button>
+                  </OptionButton>
                 );
               })}
-            </div>
+            </DropdownColumn>
 
             {selectedCollege && (
-              <div style={{ ...columnStyle, minWidth: "160px" }}>
-                <div style={titleStyle}>
+              <DropdownColumn $minWidth="160px">
+                <ColumnTitle>
                   HALLS IN {selectedCollege} (optional)
-                </div>
+                </ColumnTitle>
                 {colleges
                   .find(function (college) {
                     return college.name === selectedCollege;
                   })
                   .halls.map(function (hall) {
                     return (
-                      <button
+                      <OptionButton
                         key={hall}
                         onClick={function () {
                           if (selectedHall === hall) {
@@ -196,58 +251,34 @@ export default function FiltersAndSearch() {
                             setSelectedHall(hall);
                           }
                         }}
-                        style={{
-                          ...linkButtonStyle,
-                          ...(selectedHall === hall ? activeItemStyle : {}),
-                        }}
+                        $isHall
+                        $isActive={selectedHall === hall}
                       >
                         {hall}
-                      </button>
+                      </OptionButton>
                     );
                   })}
-              </div>
+              </DropdownColumn>
             )}
-          </div>
+          </DropdownPanel>
         )}
-      </div>
+      </DropdownWrapper>
 
-      <div
-        style={{ position: "relative", display: "inline-block" }}
+      <DropdownWrapper
         onMouseEnter={() => setIsTypeOpen(true)}
         onMouseLeave={() => setIsTypeOpen(false)}
       >
-        <button
-          style={{
-            padding: "8px 16px",
-            borderRadius: "20px",
-            border: "1px solid #ddd",
-            backgroundColor: isTypeOpen ? "#f5f5f5" : "white",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-          }}
-        >
+        <DropdownToggleButton $isOpen={isTypeOpen}>
           {selectedType || "Goods Type"} <span>{isTypeOpen ? "▴" : "▾"}</span>
-        </button>
+        </DropdownToggleButton>
 
         {isTypeOpen && (
-          <div
-            style={{
-              ...panelStyle,
-              minWidth: "220px",
-              display: "block",
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              gap: 0,
-            }}
-          >
-            <div style={{ ...columnStyle, minWidth: "200px" }}>
-              <div style={titleStyle}>GOODS TYPE</div>
+          <DropdownPanel $isBlock $minWidth="220px">
+            <DropdownColumn $minWidth="200px">
+              <ColumnTitle>GOODS TYPE</ColumnTitle>
               {goodsTypes.map(function (type) {
                 return (
-                  <button
+                  <OptionButton
                     key={type}
                     onClick={function () {
                       if (selectedType === type) {
@@ -256,122 +287,46 @@ export default function FiltersAndSearch() {
                         setSelectedType(type);
                       }
                     }}
-                    style={{
-                      ...linkButtonStyle,
-                      ...(selectedType === type ? activeItemStyle : {}),
-                    }}
+                    $isActive={selectedType === type}
                   >
                     {type}
-                  </button>
+                  </OptionButton>
                 );
               })}
-            </div>
-          </div>
+            </DropdownColumn>
+          </DropdownPanel>
         )}
-      </div>
+      </DropdownWrapper>
 
       {(selectedCollege || selectedType) && (
-        <button
-          onClick={handleResetFilters}
-          title="Reset Filters"
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "#666",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "8px",
-            borderRadius: "50%",
-            transition: "background-color 0.2s, color 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#ffe6e6";
-            e.currentTarget.style.color = "#e60000";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "#666";
-          }}
-        >
+        <ResetButton onClick={handleResetFilters} title="Reset Filters">
           <FaUndo size={14} />
-        </button>
+        </ResetButton>
       )}
 
-      <div style={{ position: "relative", flex: 1 }}>
-        <input
+      <SearchInputWrapper>
+        <SearchInput
           type="text"
           placeholder="Search keywords..."
           value={searchKeywords}
           onChange={(e) => setSearchKeywords(e.target.value)}
-          onKeyDown={function(e) {
-            if (e.key === 'Enter') {
+          onKeyDown={function (e) {
+            if (e.key === "Enter") {
               navigate(getSearchUrl());
             }
-          }}
-          style={{
-            width: "100%",
-            padding: "10px 140px 10px 16px",
-            borderRadius: "20px",
-            border: "none",
-            outline: "none",
-            fontSize: "0.95rem",
-            backgroundColor: "transparent",
-            boxSizing: "border-box", 
           }}
         />
 
         {searchKeywords && (
-          <button
-            onClick={handleClearKeywords}
-            title="Clear Keywords"
-            style={{
-              position: "absolute",
-              right: "110px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              color: "#aaa",
-              cursor: "pointer",
-              padding: "5px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "50%",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#555")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#aaa")}
-          >
+          <ClearButton onClick={handleClearKeywords} title="Clear Keywords">
             <FaTimes size={14} />
-          </button>
+          </ClearButton>
         )}
-        
-        <button
-          onClick={() => navigate(getSearchUrl())}
-          style={{
-            position: "absolute",
-            right: "4px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "8px 16px",
-            borderRadius: "20px",
-            backgroundColor: "#2563eb",
-            color: "white",
-            textDecoration: "none",
-            fontSize: "0.9rem",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-            border: "none",
-          }}
-        >
+
+        <SubmitSearchButton onClick={() => navigate(getSearchUrl())}>
           <FaSearch /> Search
-        </button>
-      </div>
-    </div>
+        </SubmitSearchButton>
+      </SearchInputWrapper>
+    </SearchBarContainer>
   );
 }

@@ -128,8 +128,6 @@ export default function App() {
             </BrandLink>
             
             <NavRow>
-             {/* 同時保留 Home 和 Community */}
-              <NavButton label="Home" to="/" icon={BsHouseDoor} />
               <NavButton label="Community" to="/community" icon={BsPeopleFill} />
   
                <RightNavGroup>
