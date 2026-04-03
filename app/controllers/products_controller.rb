@@ -18,9 +18,14 @@ class ProductsController < ApplicationController
 
     products = Product.with_attached_images.includes(:seller).all
     products = products.search_by_name(params[:keywords]) if params[:keywords].present?
-    products = products.joins(:seller).where(users: { college: params[:college] }) if params[:college].present?
     products = products.joins(:category).where(categories: { category_name: params[:type] }) if params[:type].present?
 
+    if params[:college].present? || params[:hall].present?
+      products = products.joins(:seller)
+      products = products.where(users: { college: params[:college] }) if params[:college].present?
+      products = products.where(users: { hall: params[:hall] }) if params[:hall].present?
+    end
+    
     total_count = products.count
     paginated_products = products.limit(limit).offset(offset)
     
