@@ -67,7 +67,7 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address:              ENV['MAILGUN_SMTP_SERVER'],
     port:                 ENV['MAILGUN_SMTP_PORT'].to_i,
-    user_name:            ENV['MAILGUN_SMTP_LOGIN'],
+    user_name:            ENV['MAILGUN_SMTP_NAME'],
     password:             ENV['MAILGUN_SMTP_PASSWORD'],
     authentication:       'plain',
     enable_starttls_auto: true,
@@ -98,6 +98,4 @@ Rails.application.configure do
   Rails.application.routes.default_url_options[:host] = "csci3100-project-25spring-d069c5b80a72.herokuapp.com/"
 
   Rails.application.routes.default_url_options[:protocol] = "https"
-
-  config.action_cable.adapter = :solid_cable
 end
