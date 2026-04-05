@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_03_094546) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_061524) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -54,6 +54,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_094546) do
     t.bigint "seller_id", null: false
     t.datetime "updated_at", null: false
     t.index ["interested_id"], name: "index_chats_on_interested_id"
+    t.index ["item_id", "seller_id", "interested_id"], name: "index_chats_on_item_seller_and_interested", unique: true
     t.index ["item_id"], name: "index_chats_on_item_id"
     t.index ["seller_id"], name: "index_chats_on_seller_id"
   end
