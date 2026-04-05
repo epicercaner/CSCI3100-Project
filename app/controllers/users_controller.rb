@@ -33,7 +33,20 @@ class UsersController < ApplicationController
       # generate a numeric OTP (if not already generated, prevent model bugs) and send email
       user.generate_verification_otp! if user.verification_otp.blank?
       user.save if user.changed?
-      UserMailer.verification_email(user).deliver_now # app/mailers/user_mailer.rb, async (temporarily changing to deliver_now to test mailing capability)
+      # temporary debugging
+      begin
+        mail = UserMailer.verification_email(user)
+        Rails.logger.info "Attempting to deliver email to: #{user.email} | From: #{mail.from} | Delivery method: #{ActionMailer::Base.delivery_method}"
+    
+        mail.deliver_now!   # note the !  (this forces raise on failure)
+
+        Rails.logger.info "Email delivery completed successfully"
+      rescue => e
+        Rails.logger.error "Email delivery FAILED: #{e.class} - #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        # Optionally still return success to user, or return error
+      end
+      # UserMailer.verification_email(user).deliver_now # app/mailers/user_mailer.rb, async (temporarily changing to deliver_now to test mailing capability)
       render json: { user: user.as_json(except: [:password_digest, 
       :verification_otp, :verification_sent_at, :verification_token]), message: 'verification_email_sent' }, status: :created
     else
