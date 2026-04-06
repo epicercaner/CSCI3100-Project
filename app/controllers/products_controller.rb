@@ -45,10 +45,12 @@ class ProductsController < ApplicationController
   # GET /products/:id
   def show
     is_liked = false
+    is_owner = false
     if current_user
       is_liked = Interest.exists?(interested_id: current_user.id, item_id: @product.id)
+      is_owner = current_user.id == @product.seller_id
     end
-    render json: format_product(@product).merge(is_liked: is_liked)
+    render json: format_product(@product).merge(is_liked: is_liked, is_owner: is_owner)
   end
 
   # POST /products
@@ -129,37 +131,45 @@ class ProductsController < ApplicationController
 
   # POST /products/:id/buy
   def buy
-  @product = Product.find(params[:id])
-  
-  ActiveRecord::Base.transaction do
-    # 1. 更新產品狀態
-    @product.update!(status: 'reserved', buyer_id: current_user.id)
-
-    # 2. 建立或尋找聊天室
-    chat = Chat.find_by(item_id: @product.id, interested_id: current_user.id)
-
-    if chat.nil?
-      chat = Chat.create!(
-        item_id: @product.id,
-        seller_id: @product.seller_id,
-        interested_id: current_user.id
-      )
+    if @product.seller_id == current_user.id
+      render_error('cannot_buy_own_product', status: :forbidden)
+      return
     end
 
-    # 3. 直接建立一條 Message 作為「通知」
-    # 這樣賣家進到聊天列表就能看到這條訊息
-    Message.create!(
-      chat_id: chat.id,
-      sender_id: current_user.id,
-      message: "I want to buy \"#{@product.name}\". System: Request sent."
-    )
+    if %w[reserved sold].include?(@product.status.to_s.downcase)
+      render_error('product_unavailable', status: :unprocessable_entity)
+      return
+    end
 
-    render json: { 
-      chat_id: chat.id, 
-      product_name: @product.name,
-      message: 'Purchase request sent via chat' 
-    }, status: :ok
-  end
+    ActiveRecord::Base.transaction do
+      # 1. 更新產品狀態
+      @product.update!(status: 'reserved', buyer_id: current_user.id)
+
+      # 2. 建立或尋找聊天室
+      chat = Chat.find_by(item_id: @product.id, interested_id: current_user.id)
+
+      if chat.nil?
+        chat = Chat.create!(
+          item_id: @product.id,
+          seller_id: @product.seller_id,
+          interested_id: current_user.id
+        )
+      end
+
+      # 3. 直接建立一條 Message 作為「通知」
+      # 這樣賣家進到聊天列表就能看到這條訊息
+      Message.create!(
+        chat_id: chat.id,
+        sender_id: current_user.id,
+        message: "I want to buy \"#{@product.name}\". System: Request sent."
+      )
+
+      render json: {
+        chat_id: chat.id,
+        product_name: @product.name,
+        message: 'Purchase request sent via chat'
+      }, status: :ok
+    end
   rescue ActiveRecord::RecordInvalid => e
     # This catches validation errors specifically and tells you WHICH one failed
     render json: { error: "Validation failed: #{e.record.errors.full_messages.join(', ')}" }, status: :unprocessable_entity

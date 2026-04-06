@@ -7,8 +7,6 @@ import {
   AiOutlineShoppingCart,
   AiOutlineClose,
   AiOutlineUser,
-  AiOutlineLeft,
-  AiOutlineRight,
   AiOutlinePicture
 } from "react-icons/ai";
 import axios from "axios";
@@ -103,9 +101,24 @@ function LikeButton({ productId, initialLiked }) {
 function BuyButton({ product }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser") || "null");
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const localUserId = storedUser?.id;
+  const isReserved = product?.status === 'reserved' || product?.status === 'sold';
+  const isOwnProduct =
+    !!product?.is_owner ||
+    (localUserId != null && Number(localUserId) === Number(product?.seller_id));
+  const isDisabled = isReserved || isOwnProduct || loading;
 
   const handleBuyClick = async () => {
     if (!product) return;
+    if (isOwnProduct) return;
     if (!window.confirm(`Confirm interest in buying "${product.name}"?`)) return;
 
     setLoading(true);
@@ -120,11 +133,13 @@ function BuyButton({ product }) {
     }
   };
 
-  const isReserved = product?.status === 'reserved' || product?.status === 'sold';
-
   return (
-    <ActionButton onClick={handleBuyClick} disabled={isReserved || loading}>
-      <AiOutlineShoppingCart color={isReserved ? "#ccc" : "#333"} />
+    <ActionButton
+      onClick={handleBuyClick}
+      disabled={isDisabled}
+      title={isOwnProduct ? "You cannot buy your own product." : undefined}
+    >
+      <AiOutlineShoppingCart color={isDisabled ? "#ccc" : "#333"} />
       <ActionButtonText>{isReserved ? "Reserved" : "Buy"}</ActionButtonText>
     </ActionButton>
   );
