@@ -12,6 +12,7 @@ import {
   AiOutlinePicture
 } from "react-icons/ai";
 import axios from "axios"; 
+import PriceHistoryChart from "../common/PriceHistoryChart";
 
 const ActionButton = styled.button`
   border: none;
@@ -282,14 +283,21 @@ const ButtonsColumn = styled.div`
 const GraphWrapper = styled.div`
   margin: 3rem 0;
   padding: 2rem;
-  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  
+  h4 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.1rem;
+  }
 `;
-
 const GraphArea = styled.div`
-  height: 200px;
-  border-bottom: 2px solid #333;
-  border-left: 2px solid #333;
+  height: 250px;
   position: relative;
+  border: none;
+  padding: 10px 20px 30px 20px;
 `;
 
 const GraphPlaceholder = styled.p`
@@ -590,7 +598,7 @@ export default function ProductInfoPage() {
       <GraphWrapper>
         <h4>Price History Graph</h4>
         <GraphArea>
-          <GraphPlaceholder>[ Line Chart Component: Date vs Price ]</GraphPlaceholder>
+          <PriceHistoryChart productId={product.id} />
         </GraphArea>
       </GraphWrapper>
 

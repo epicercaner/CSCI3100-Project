@@ -9,13 +9,6 @@ class ProductsController < ApplicationController
 
   # GET /products
   def index
-    limit = (params[:limit] || 15).to_i
-    limit = 15 if limit <= 0
-    
-    page = (params[:page] || 1).to_i
-    page = 1 if page <= 0
-    offset = (page - 1) * limit
-
     products = Product.with_attached_images.includes(:seller).all
     products = products.search_by_name(params[:keywords]) if params[:keywords].present?
     products = products.joins(:category).where(categories: { category_name: params[:type] }) if params[:type].present?
@@ -27,7 +20,21 @@ class ProductsController < ApplicationController
     end
     
     total_count = products.count
-    paginated_products = products.limit(limit).offset(offset)
+    
+    if params[:fetch_all] == 'true'
+      paginated_products = products
+      page = 1
+      limit = total_count
+    else
+      limit = (params[:limit] || 15).to_i
+      limit = 15 if limit <= 0
+      
+      page = (params[:page] || 1).to_i
+      page = 1 if page <= 0
+      offset = (page - 1) * limit
+
+      paginated_products = products.limit(limit).offset(offset)
+    end
     
     render json: {
       data: paginated_products.map { |p| format_product(p) },
@@ -121,11 +128,30 @@ class ProductsController < ApplicationController
 
     points = (params[:points] || 10).to_i
     points = [[points, 1].max, 20].min
-    price_histories = product.price_histories.order(date: :desc).limit(points)
+    if product.category_id.present?
+      category_histories = PriceHistory.joins(:product)
+                                       .where(products: { category_id: product.category_id })
+                                       .order(date: :desc)
 
+      if category_histories.any?
+        daily_averages = category_histories.group_by { |h| h.date.to_date }.map do |date, records|
+          { date: date, price: (records.sum(&:price).to_f / records.size).round(2) }
+        end.take(points)
+
+        render json: {
+          type: 'category',
+          category_name: product.category&.category_name || "Category",
+          history: daily_averages
+        }, status: :ok
+        return
+      end
+    end
+
+    price_histories = product.price_histories.order(date: :desc).limit(points)
     render json: {
+      type: 'product',
       product_id: product.id,
-      prices: price_histories.map { |entry| entry.price.to_f }
+      history: price_histories.map { |entry| { date: entry.date, price: entry.price.to_f } }
     }, status: :ok
   end
 
