@@ -5,7 +5,7 @@ Feature: User Logout
 
   @javascript
   Scenario: Successful logout
-    Given I am on the profile page
+    Given I open the profile page
     When I click on the "Log out" sidebar link
     And I confirm the logout dialog
     Then I should see "您已成功登出"

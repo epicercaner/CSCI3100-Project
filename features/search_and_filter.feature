@@ -5,18 +5,18 @@ Feature: Search and Filter Products
 
   Background:
     Given the following categories exist:
-      | name      |
-      | Textbooks |
-      | Furniture |
+      | name              |
+      | Textbooks & Notes |
+      | Furniture & Home  |
     And the following users exist:
-      | email                        | password | college |
-      | 1155000001@link.cuhk.edu.hk  | password | Shaw    |
-      | 1155000002@link.cuhk.edu.hk  | password | Morningside |
+      | email                        | password | college      |
+      | 1155000001@link.cuhk.edu.hk  | password | Shaw College |
+      | 1155000002@link.cuhk.edu.hk  | password | Morningside  |
     And the following products exist:
-      | name              | price | category  | seller                       |
-      | Calculus Textbook | 100   | Textbooks | 1155000001@link.cuhk.edu.hk  |
-      | Physics Book      | 150   | Textbooks | 1155000002@link.cuhk.edu.hk |
-      | Wooden Chair      | 50    | Furniture | 1155000001@link.cuhk.edu.hk  |
+      | name              | price | category          | seller                       |
+      | Calculus Textbook | 100   | Textbooks & Notes | 1155000001@link.cuhk.edu.hk  |
+      | Physics Book      | 150   | Textbooks & Notes | 1155000002@link.cuhk.edu.hk |
+      | Wooden Chair      | 50    | Furniture & Home  | 1155000001@link.cuhk.edu.hk  |
 
   @javascript
   Scenario: Simple search by keywords
