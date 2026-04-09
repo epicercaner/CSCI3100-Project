@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { loginUser } from "../../common/loginauth";
 import { useNavigate } from "react-router-dom";
+import { authButtonStyle, authCardStyle, authInputStyle } from "../../common/authUi";
+import { validateLoginFields } from "../../common/authValidation";
 
 const LoginPage = ({ setUser }) => {
   const [email, setEmail] = useState("");
@@ -10,10 +12,18 @@ const LoginPage = ({ setUser }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const normalizedEmail = email.trim();
+    const normalizedPassword = password.trim();
+    const validationError = validateLoginFields(normalizedEmail, normalizedPassword);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const data = await loginUser(email, password);
+      const data = await loginUser(normalizedEmail, normalizedPassword);
       
       if (data.message === 'logged_in') {
         alert("Login Success!");
@@ -22,7 +32,7 @@ const LoginPage = ({ setUser }) => {
         
         localStorage.setItem("currentUser", JSON.stringify(data.user));
         
-        navigate("/Account"); 
+        navigate("/account"); 
       }
     } catch (error) {
       console.error("Login Error:", error.response?.data);
@@ -39,18 +49,17 @@ const LoginPage = ({ setUser }) => {
   };
 
   // 樣式設定 (與 RegisterPage 保持一致)
-  const inputStyle = { width: "100%", padding: "12px", margin: "10px 0", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" };
-  const buttonStyle = { width: "100%", padding: "12px", backgroundColor: "#702082", color: "white", border: "none", borderRadius: "25px", fontWeight: "bold", cursor: "pointer", marginTop: "15px" };
+  const labelStyle = { textAlign: "left", fontSize: "0.85rem", fontWeight: "bold" };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "60px auto", padding: "2rem", border: "1px solid #eee", borderRadius: "15px", textAlign: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
+    <div style={{ ...authCardStyle, boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
       <h2 style={{ color: "#702082" }}>CUHK Marketplace</h2>
       <p style={{ color: "#666", marginBottom: "20px" }}>Sign in to continue</p>
       
       <form onSubmit={handleLogin}>
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold" }}>CUHK Email</div>
+        <div style={labelStyle}>CUHK Email</div>
         <input
-          style={inputStyle}
+          style={authInputStyle}
           type="email"
           placeholder="1155xxxxxx@link.cuhk.edu.hk"
           value={email}
@@ -58,9 +67,9 @@ const LoginPage = ({ setUser }) => {
           required
         />
 
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>Password</div>
+        <div style={{ ...labelStyle, marginTop: "10px" }}>Password</div>
         <input
-          style={inputStyle}
+          style={authInputStyle}
           type="password"
           placeholder="Enter your password"
           value={password}
@@ -68,7 +77,7 @@ const LoginPage = ({ setUser }) => {
           required
         />
 
-        <button type="submit" style={buttonStyle} disabled={loading}>
+        <button type="submit" style={authButtonStyle} disabled={loading}>
           {loading ? "Authenticating..." : "Login"}
         </button>
       </form>

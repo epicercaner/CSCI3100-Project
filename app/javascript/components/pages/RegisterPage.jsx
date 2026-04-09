@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { registerUser, verifyToken } from "../../common/register";
 import { useNavigate } from "react-router-dom";
+import { authButtonStyle, authCardStyle, authInputStyle } from "../../common/authUi";
+import { validateRegisterFields } from "../../common/authValidation";
 
 const RegisterPage = ({ setUser }) => {
   const navigate = useNavigate();
@@ -15,17 +17,28 @@ const RegisterPage = ({ setUser }) => {
   // 處理註冊第一步：發送資料並要求 OTP
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("密碼確認不一致！");
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim();
+    const normalizedPassword = password.trim();
+    const normalizedConfirmPassword = confirmPassword.trim();
+    const validationError = validateRegisterFields({
+      name: normalizedName,
+      email: normalizedEmail,
+      password: normalizedPassword,
+      confirmPassword: normalizedConfirmPassword,
+    });
+
+    if (validationError) {
+      alert(validationError);
       return;
     }
 
     setLoading(true);
     try {
       await registerUser({
-        name: name, 
-        email: email,
-        password: password
+        name: normalizedName,
+        email: normalizedEmail,
+        password: normalizedPassword,
       });
       setShowOtpPopup(true); 
     } catch (error) {
@@ -38,10 +51,17 @@ const RegisterPage = ({ setUser }) => {
 
 const handleVerifyOtp = async (e) => {
     e.preventDefault();
+    const normalizedOtp = otp.trim();
+    const normalizedEmail = email.trim();
+    if (!normalizedOtp) {
+      alert("Please enter the OTP token.");
+      return;
+    }
+
     setLoading(true);
     try {
       // 調用 verifyToken
-      const result = await verifyToken(email, otp); 
+      const result = await verifyToken(normalizedEmail, normalizedOtp); 
       
       if (result.message === 'verified') {
         alert("驗證成功！正在前往完善個人資料...");
@@ -53,7 +73,7 @@ const handleVerifyOtp = async (e) => {
         }
 
         // 2. 跳轉到 Account 頁面 (因為 college 還是空的，AccountInfo 會自動開啟編輯模式)
-        navigate("/Account");
+        navigate("/account");
       }
     } catch (error) {
       console.error("Verify Error:", error.response?.data);
@@ -64,17 +84,15 @@ const handleVerifyOtp = async (e) => {
   };
 
   // --- UI 樣式 ---
-  const inputStyle = { width: "100%", padding: "12px", margin: "10px 0", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" };
-  const buttonStyle = { width: "100%", padding: "12px", backgroundColor: "#702082", color: "white", border: "none", borderRadius: "25px", fontWeight: "bold", cursor: "pointer", marginTop: "15px" };
   const overlayStyle = { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "60px auto", padding: "2rem", border: "1px solid #eee", borderRadius: "15px", textAlign: "center" }}>
+    <div style={authCardStyle}>
       <h2 style={{ color: "#702082" }}>Register</h2>
       <form onSubmit={handleRegisterSubmit}>
         {/* 新增的 User Name 輸入框 */}
         <input 
-          style={inputStyle} 
+          style={authInputStyle} 
           type="text" 
           placeholder="User Name" 
           value={name} 
@@ -82,11 +100,11 @@ const handleVerifyOtp = async (e) => {
           required 
         />
         
-        <input style={inputStyle} type="email" placeholder="CUHK Email (@link.cuhk.edu.hk)" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input style={inputStyle} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <input style={inputStyle} type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+        <input style={authInputStyle} type="email" placeholder="CUHK Email (@link.cuhk.edu.hk)" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input style={authInputStyle} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input style={authInputStyle} type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
         
-        <button type="submit" style={buttonStyle} disabled={loading}>
+        <button type="submit" style={authButtonStyle} disabled={loading}>
           {loading ? "Sending..." : "Create Account"}
         </button>
       </form>
@@ -99,14 +117,14 @@ const handleVerifyOtp = async (e) => {
             <p style={{ fontSize: "0.8rem" }}>Check your CUHK email for the code</p>
             <form onSubmit={handleVerifyOtp}>
               <input 
-                style={{ ...inputStyle, textAlign: "center", fontSize: "1.2rem" }} 
+                style={{ ...authInputStyle, textAlign: "center", fontSize: "1.2rem" }} 
                 type="text" 
                 placeholder="Enter Token" 
                 value={otp} 
                 onChange={(e) => setOtp(e.target.value)} 
                 required 
               />
-              <button type="submit" style={buttonStyle} disabled={loading}>
+              <button type="submit" style={authButtonStyle} disabled={loading}>
                 {loading ? "Verifying..." : "Verify & Register"}
               </button>
             </form>

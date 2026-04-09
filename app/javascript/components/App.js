@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import styled from "styled-components";
-import axios from "axios";
+import apiClient from "../common/apiClient";
 import { 
   BsBell, 
   BsChatDots, 
@@ -11,8 +11,7 @@ import {
   BsPencilSquare,
   BsBoxArrowLeft,
   BsGear,
-  BsPeopleFill,
-  BsHouseDoor
+  BsPeopleFill
 } from "react-icons/bs";
 
 import IndexPage from "./pages/IndexPage";
@@ -27,18 +26,72 @@ import CommunityPage from "./pages/CommunityPage";
 import NavButton from "./common/NavButton";
 import { logoutUser } from "../common/loginauth";
 import SearchResultsPage from "./pages/SearchResultsPage";
+const AppContainer = styled.div`
+  max-width: 90%;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+  box-sizing: border-box;
+`;
 
-axios.defaults.withCredentials = true;
+const Header = styled.header`
+  margin-bottom: 2rem;
+`;
 
-const AppContainer = styled.div` max-width: 90%; margin: 0 auto; width: 100%; padding: 2rem; font-family: system-ui, sans-serif; box-sizing: border-box;`;
-const LogoImg = styled.img` height: 3.8em; width: auto; display: block; &:hover ${LogoImg} { transform: scale(1.05); }  `;
-const Header = styled.header` margin-bottom: 2rem; `;
-const Nav = styled.nav` display: flex; justify-content: space-between; align-items: center; gap: 1.2rem; `;
-const BrandLink = styled(Link)` text-decoration: none; color: #530662; display: flex; align-items: center;
-                               gap: 0.8rem; cursor: pointer; padding: 0.5rem; `;
-const Title = styled.h2` margin: 0; font-weight: 900; line-height: 1; white-space: nowrap; &:hover ${Title} { transform: scale(1.007); } `;
-const NavRow = styled.div` display: flex; gap: 0.6rem; align-items: center; width: 100%; `;
-const RightNavGroup = styled.div` display: flex; gap: 0.6rem; margin-left: auto; align-items: center; `;
+const Nav = styled.nav`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.2rem;
+`;
+
+const BrandLink = styled(Link)`
+  text-decoration: none;
+  color: #530662;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  padding: 0.5rem;
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+
+  &:hover h2 {
+    transform: scale(1.007);
+  }
+`;
+
+const LogoImg = styled.img`
+  height: 3.8em;
+  width: auto;
+  display: block;
+  transition: transform 0.2s ease;
+`;
+
+const Title = styled.h2`
+  margin: 0;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform 0.2s ease;
+`;
+
+const NavRow = styled.div`
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  width: 100%;
+`;
+
+const RightNavGroup = styled.div`
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+  align-items: center;
+`;
 
 const DropdownContainer = styled.div`
   position: relative;
@@ -56,7 +109,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   z-index: 1000;
   min-width: 180px;
-  display: ${props => props.show ? 'flex' : 'none'};
+  display: ${(props) => (props.$show ? "flex" : "none")};
   flex-direction: column;
   margin-top: 5px; 
 
@@ -90,32 +143,36 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("/sessions");
+        const res = await apiClient.get("/sessions");
         setUser(res.data);
-      } catch (err) {
+      } catch {
         setUser(null);
       }
     };
     checkAuth();
   }, []);
 
-  const handleLogoutClick = async (e) => {
+  const completeLocalLogout = useCallback(() => {
+    setUser(null);
+    setShowProfile(false);
+    localStorage.removeItem("currentUser");
+    window.location.href = "/";
+  }, []);
+
+  const handleLogoutClick = useCallback(async (e) => {
     e.preventDefault(); 
     if (window.confirm("Are you sure you want to log out?")) {
       try {
         await logoutUser();
-        setUser(null); 
-        setShowProfile(false); 
-        localStorage.removeItem("currentUser");
-        window.location.href = "/"; 
-      } catch (err) {
-        console.error("Logout failed", err);
-        setUser(null);
-        localStorage.removeItem("currentUser");
-        window.location.href = "/";
+        completeLocalLogout();
+      } catch (error) {
+        if (process.env.NODE_ENV !== "production") {
+          console.error("Logout failed", error);
+        }
+        completeLocalLogout();
       }
     }
-  };
+  }, [completeLocalLogout]);
   
   return (
     <BrowserRouter>
@@ -141,11 +198,11 @@ export default function App() {
                 >
                   <NavButton label="Setting" to="#" icon={BsGear} />
                   
-                  <DropdownMenu show={showProfile}>
+                  <DropdownMenu $show={showProfile}>
                     {user && user.email ? (
                       <>
                         <div style={userEmailLabel}>{user.email}</div>
-                        <DropdownItem to="/Account">
+                        <DropdownItem to="/account">
                           <BsPersonCircle /> Account Info
                         </DropdownItem>
                         <hr style={divider} />
@@ -171,19 +228,20 @@ export default function App() {
         </Header>
 
         <main>
-          <Routes>
-            <Route path="/" element={<IndexPage />} />
-            <Route path="/login" element={<LoginPage setUser={setUser} />} />
-            <Route path="/register" element={<RegisterPage setUser={setUser} />} />
-            <Route path="/Account" element={<AccountPage setUser={setUser} />} />
-            <Route path="/product/:id" element={<ProductInfoPage />} />
-            <Route path="/sell" element={<SellPage />} />
-            <Route path="/edit/:id" element={<SellPage />} />
-            <Route path="/notifications" element={<NotificationPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/search" element={<SearchResultsPage />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<IndexPage />} />
+              <Route path="/login" element={<LoginPage setUser={setUser} />} />
+              <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+              <Route path="/Account" element={<AccountPage setUser={setUser} />} />
+              <Route path="/account" element={<AccountPage setUser={setUser} />} />
+              <Route path="/product/:id" element={<ProductInfoPage />} />
+              <Route path="/sell" element={<SellPage />} />
+              <Route path="/edit/:id" element={<SellPage />} />
+              <Route path="/notifications" element={<NotificationPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/search" element={<SearchResultsPage />} />
+            </Routes>
         </main>
       </AppContainer>
     </BrowserRouter>

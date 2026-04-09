@@ -1,19 +1,16 @@
-import axios from 'axios';
-
-// 確保請求會帶上 Cookies (Rails Session 依賴這個)
-axios.defaults.withCredentials = true;
+import apiClient from "./apiClient";
 
 // 登入
 export async function loginUser(email, password) {
-  const res = await axios.post('/sessions', {
+  const res = await apiClient.post("/sessions", {
     email: email,
-    password: password
+    password: password,
   });
   return res.data;
 }
 
 // 登出
 export async function logoutUser() {
-  const res = await axios.delete('/sessions'); 
+  const res = await apiClient.delete("/sessions");
   return res.data;
 }

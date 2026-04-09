@@ -4,46 +4,48 @@ import { FaUserCircle, FaEnvelope, FaPenNib, FaRegEdit, FaSave, FaTimes, FaUnive
 import { MdOutlineDateRange } from "react-icons/md";
 import { colleges } from "../../common/collegeConstants";
 
-export default function AccountInfo({ user, setUser }) {
-  if (!user) {
-    return <div style={{ padding: "20px" }}>Loading user information...</div>;
-  }
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  
-  const [profile, setProfile] = useState({
+function buildProfileFromUser(user) {
+  return {
     username: user?.name || "",
     email: user?.email || "",
     bio: user?.bio || "",
     college: user?.college || "",
     hostel: user?.hostel || "",
-    memberSince: user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "N/A",
-    avatarUrl: user?.profile_picture_url || null
-  });
+    memberSince: user?.created_at
+      ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+      : "N/A",
+    avatarUrl: user?.profile_picture_url || null,
+  };
+}
 
-  const [tempProfile, setTempProfile] = useState({ ...profile });
-  const availableHalls = colleges.find(c => c.name === tempProfile.college)?.halls || [];
- useEffect(() => {
-  if (user) {
-    const newProfile = {
-      username: user.name || "",
-      email: user.email || "",
-      bio: user.bio || "",
-      college: user.college || "",
-      hostel: user.hostel || "",
-      // 加上安全檢查：如果沒有 created_at，給予一個預設值
-      memberSince: user.created_at 
-        ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
-        : "N/A",
-      avatarUrl: user.profile_picture_url || null
-    };
+export default function AccountInfo({ user, setUser }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const [profile, setProfile] = useState(() => buildProfileFromUser(user));
+  const [tempProfile, setTempProfile] = useState(() => buildProfileFromUser(user));
+  const availableHalls = colleges.find((c) => c.name === tempProfile.college)?.halls || [];
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const newProfile = buildProfileFromUser(user);
     setProfile(newProfile);
     setTempProfile(newProfile);
     if (!user.college) setIsEditing(true);
-  }
-}, [user]);
+  }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,6 +62,9 @@ export default function AccountInfo({ user, setUser }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -95,6 +100,10 @@ export default function AccountInfo({ user, setUser }) {
       setLoading(false);
     }
   };
+
+  if (!user) {
+    return <div style={{ padding: "20px" }}>Loading user information...</div>;
+  }
 
   return (
     <div style={styles.card}>

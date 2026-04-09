@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../common/apiClient";
 import AccountInfo from "./AccountInfo";
 import Interested from "./Interested";
 import SellingProduct from "./SellingProduct";
@@ -16,7 +16,7 @@ export default function AccountPage({ setUser }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await axios.get("/sessions"); 
+        const res = await apiClient.get("/sessions");
         setUserData(res.data);
         setLoading(false);
       } catch (error) {

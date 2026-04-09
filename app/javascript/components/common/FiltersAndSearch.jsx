@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { FaSearch, FaTimes, FaUndo } from "react-icons/fa";
@@ -171,7 +171,13 @@ export default function FiltersAndSearch() {
     setSearchKeywords(searchParams.get("keywords") || "");
   }, [searchParams]);
 
-  const getSearchUrl = () => {
+  const selectedCollegeData = useMemo(
+    () => colleges.find((college) => college.name === selectedCollege) || null,
+    [selectedCollege]
+  );
+  const availableHalls = selectedCollegeData?.halls || [];
+
+  const getSearchUrl = useCallback(() => {
     const params = new URLSearchParams();
     if (selectedCollege) params.set("college", selectedCollege);
     if (selectedHall) params.set("hall", selectedHall);
@@ -179,17 +185,30 @@ export default function FiltersAndSearch() {
     if (searchKeywords.trim()) params.set("keywords", searchKeywords.trim());
     const query = params.toString();
     return `/search${query ? `?${query}` : ""}`;
-  };
+  }, [searchKeywords, selectedCollege, selectedHall, selectedType]);
 
-  const handleResetFilters = () => {
+  const handleResetFilters = useCallback(() => {
     setSelectedCollege(null);
     setSelectedHall(null);
     setSelectedType(null);
-  };
+  }, []);
 
-  const handleClearKeywords = () => {
+  const handleClearKeywords = useCallback(() => {
     setSearchKeywords("");
-  };
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    navigate(getSearchUrl());
+  }, [getSearchUrl, navigate]);
+
+  const handleKeywordKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        navigate(getSearchUrl());
+      }
+    },
+    [getSearchUrl, navigate]
+  );
 
   return (
     <SearchBarContainer>
@@ -210,11 +229,11 @@ export default function FiltersAndSearch() {
           <DropdownPanel $minWidth={selectedCollege ? "420px" : "260px"}>
             <DropdownColumn $minWidth="160px">
               <ColumnTitle>COLLEGE</ColumnTitle>
-              {colleges.map(function (college) {
+              {colleges.map((college) => {
                 return (
                   <OptionButton
                     key={college.name}
-                    onClick={function () {
+                    onClick={() => {
                       if (selectedCollege === college.name) {
                         setSelectedCollege(null);
                         setSelectedHall(null);
@@ -236,15 +255,11 @@ export default function FiltersAndSearch() {
                 <ColumnTitle>
                   HALLS IN {selectedCollege} (optional)
                 </ColumnTitle>
-                {colleges
-                  .find(function (college) {
-                    return college.name === selectedCollege;
-                  })
-                  .halls.map(function (hall) {
+                {availableHalls.map((hall) => {
                     return (
                       <OptionButton
                         key={hall}
-                        onClick={function () {
+                        onClick={() => {
                           if (selectedHall === hall) {
                             setSelectedHall(null);
                           } else {
@@ -276,11 +291,11 @@ export default function FiltersAndSearch() {
           <DropdownPanel $isBlock $minWidth="220px">
             <DropdownColumn $minWidth="200px">
               <ColumnTitle>GOODS TYPE</ColumnTitle>
-              {goodsTypes.map(function (type) {
+              {goodsTypes.map((type) => {
                 return (
                   <OptionButton
                     key={type}
-                    onClick={function () {
+                    onClick={() => {
                       if (selectedType === type) {
                         setSelectedType(null);
                       } else {
@@ -310,11 +325,7 @@ export default function FiltersAndSearch() {
           placeholder="Search keywords..."
           value={searchKeywords}
           onChange={(e) => setSearchKeywords(e.target.value)}
-          onKeyDown={function (e) {
-            if (e.key === "Enter") {
-              navigate(getSearchUrl());
-            }
-          }}
+          onKeyDown={handleKeywordKeyDown}
         />
 
         {searchKeywords && (
@@ -323,7 +334,7 @@ export default function FiltersAndSearch() {
           </ClearButton>
         )}
 
-        <SubmitSearchButton onClick={() => navigate(getSearchUrl())}>
+        <SubmitSearchButton onClick={handleSearchSubmit}>
           <FaSearch /> Search
         </SubmitSearchButton>
       </SearchInputWrapper>

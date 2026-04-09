@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../common/ProductCard";
 import FiltersAndSearch from "../common/FiltersAndSearch"; 
@@ -20,6 +20,7 @@ export default function SearchResults() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const queryString = useMemo(() => searchParams.toString(), [searchParams]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -30,8 +31,7 @@ export default function SearchResults() {
       setError(null);
 
       try {
-        const queryStr = searchParams.toString();
-        const url = `/products${queryStr ? `?${queryStr}` : ""}`;
+        const url = `/products${queryString ? `?${queryString}` : ""}`;
         const response = await fetch(url, {
           signal: controller.signal,
           credentials: "include",
@@ -75,7 +75,23 @@ export default function SearchResults() {
       isActive = false;
       controller.abort();
     };
-  }, [searchParams]);
+  }, [queryString]);
+
+  const productCards = useMemo(
+    () =>
+      products.map((product) => (
+        <ProductCard
+          key={product.id}
+          id={product.id}
+          name={product.name}
+          price={product.price}
+          condition={product.condition}
+          status={product.status || "Available"}
+          images={product.images}
+        />
+      )),
+    [products]
+  );
 
   return (
     <div style={{ padding: "1rem" }}>
@@ -91,17 +107,7 @@ export default function SearchResults() {
           {products.length === 0 ? (
             <p>No products match your criteria. Try different filters!</p>
           ) : (
-            products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                condition={product.condition}
-                status={product.status || "Available"}
-                images={product.images}
-              />
-            ))
+            productCards
           )}
         </div>
       )}

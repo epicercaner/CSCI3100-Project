@@ -17,9 +17,8 @@ export default function SellingProducts() {
   };
 
   const handleSave = (id) => {
-    setProducts(products.map(p => p.id === id ? editForm : p));
+    setProducts((prevProducts) => prevProducts.map((p) => (p.id === id ? editForm : p)));
     setEditingId(null);
-    console.log("Saving product:", editForm);
   };
 
   return (

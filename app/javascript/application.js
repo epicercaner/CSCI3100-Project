@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import "./common/apiClient";
 
 // Bootstrap imports
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -14,4 +15,4 @@ if (rootElement) {
   const root = createRoot(rootElement);
   root.render(<App />);
 } // Entry point for the build script in your package.json
-import "./channels"
+import "./channels";
