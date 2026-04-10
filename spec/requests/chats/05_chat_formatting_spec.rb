@@ -35,5 +35,19 @@ RSpec.describe 'Chats API', type: :request do
       
       expect(seller_data).to include('email', 'name', 'profile_picture_url')
     end
+
+    it 'includes serialized product image urls in chat payload' do
+      image_file = Rack::Test::UploadedFile.new(
+        Rails.root.join('spec/fixtures/files/test_image.jpg'),
+        'image/jpeg'
+      )
+      product.images.attach(image_file)
+
+      get chat_path(chat.id), headers: json_headers
+      chat_data = JSON.parse(response.body)
+
+      expect(chat_data.dig('product', 'images')).to be_an(Array)
+      expect(chat_data.dig('product', 'images').first).to be_present
+    end
   end
 end
