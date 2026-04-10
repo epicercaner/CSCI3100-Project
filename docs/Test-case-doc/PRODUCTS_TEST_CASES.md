@@ -129,6 +129,11 @@
 - returns valid image URLs in response body
 - handles empty/null image URLs appropriately
 
+## Product model image_urls behavior
+- returns an empty array when no images are attached.
+- returns blob URLs when using non-Cloudinary storage services.
+- returns direct image URLs when the storage service supports `cloudinary_url`.
+
 ## Error handling
 - handles file upload errors gracefully
 

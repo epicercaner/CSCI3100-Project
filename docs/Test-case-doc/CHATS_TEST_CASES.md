@@ -27,3 +27,9 @@
 ## Data Exposure Checks
 - Seller and buyer payloads do not expose sensitive fields like `password_digest` and `verification_otp`.
 - Chat responses include expected contact fields (`email`, `name`, `profile_picture_url`) used by frontend chat UI.
+- Chat responses include serialized product `images` URLs for chat item previews.
+
+## ActionCable ChatChannel
+- subscription succeeds and starts stream when `chat_id` is provided.
+- subscription is rejected when `chat_id` is missing.
+- unsubscribe callback is callable without errors.
