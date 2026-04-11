@@ -93,6 +93,44 @@ const resendOtp = (email) => {
 };
 ```
 
+### Forgot Password (Send Reset OTP)
+**Endpoint:** `POST /users/forgot_password`  
+**Parameters:**
+- `email`: string
+
+**Notes:**
+- Always returns a generic success message to prevent account enumeration.
+- OTP is only sent when the account exists and is already verified.
+
+**Example:**
+```javascript
+const forgotPassword = (email) => {
+  return api.post('/users/forgot_password', { email });
+};
+```
+
+### Reset Password with OTP
+**Endpoint:** `POST /users/reset_password`  
+**Parameters:**
+- `email`: string
+- `otp`: string (6-digit code)
+- `new_password`: string
+
+**Behavior:**
+- Validates OTP with a 24-hour TTL.
+- On success, updates password and clears OTP.
+
+**Example:**
+```javascript
+const resetPassword = (email, otp, newPassword) => {
+  return api.post('/users/reset_password', {
+    email,
+    otp,
+    new_password: newPassword,
+  });
+};
+```
+
 ---
 
 ## 2. User Profile
@@ -125,6 +163,8 @@ const updateProfile = (cuhkId, userData) => {
 - `email`: string
 - `current_password`: string
 - `new_password`: string
+
+**Note:** This endpoint requires the user to be authenticated.
 
 **Example:**
 ```javascript

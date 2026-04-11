@@ -67,6 +67,35 @@
 - without authentication
   - requires authentication
 
+## POST /users/forgot_password
+- with verified user email
+  - sends password reset OTP email
+  - generates new OTP
+  - returns generic success message
+- with unverified user email
+  - does not send password reset OTP email
+  - returns generic success message
+- with invalid or missing email
+  - returns generic success message to prevent account enumeration
+
+## POST /users/reset_password
+- with valid OTP
+  - resets password
+  - clears OTP fields
+  - returns success message
+- with invalid OTP
+  - returns unprocessable content
+  - does not change password
+- with expired OTP
+  - returns unprocessable content
+- with missing required fields
+  - returns bad request for missing email
+  - returns bad request for missing otp
+  - returns bad request for missing new_password
+- with invalid account state
+  - fails for non-existent email
+  - fails for unverified user
+
 ## GET /users/interests
 - with authentication
   - returns current user's interested products
@@ -96,6 +125,8 @@
 ## Authentication checks
 - allows unauthenticated access to create action
 - allows unauthenticated access to verify action
+- allows unauthenticated access to forgot_password action
+- allows unauthenticated access to reset_password action
 - allows unauthenticated access to index action
 - allows unauthenticated access to show action
 - requires authentication for interests action

@@ -117,6 +117,63 @@ end
     render json: { message: "verification_email_sent_if_needed" }, status: :ok
   end
 
+  # POST /users/forgot_password
+  def forgot_password
+    # Accepts { email: "..." }
+    email = params[:email].to_s.downcase.strip
+
+    if email.present?
+      user = User.find_by(email: email)
+      if user&.verified_at.present?
+        user.generate_verification_otp!
+        user.save
+        UserMailer.password_reset_otp_email(user).deliver_later
+      end
+    end
+
+    # Generic response to avoid account enumeration
+    render json: { message: "password_reset_otp_sent_if_needed" }, status: :ok
+  end
+
+  # POST /users/reset_password
+  def reset_password
+    email = params[:email].to_s.downcase.strip
+    otp = params[:otp].to_s
+    new_password = params[:new_password]
+
+    if email.blank?
+      render_error("email_missing", status: :bad_request)
+      return
+    end
+
+    if otp.blank?
+      render_error("otp_missing", status: :bad_request)
+      return
+    end
+
+    if new_password.blank?
+      render_error("new_password_missing", status: :bad_request)
+      return
+    end
+
+    user = User.find_by(email: email)
+    if user.nil? || user.verified_at.nil?
+      render_error("invalid_otp_or_email", status: :not_found)
+      return
+    end
+
+    unless user.otp_valid?(otp)
+      render_error("invalid_or_expired_otp", status: :unprocessable_content)
+      return
+    end
+
+    if user.update(password: new_password, verification_otp: nil, verification_sent_at: nil)
+      render json: { message: "password_reset" }, status: :ok
+    else
+      render_error(user.errors, status: :unprocessable_content)
+    end
+  end
+
  # ====== register section end ======
 
  # PATCH/PUT /users/:id

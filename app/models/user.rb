@@ -35,12 +35,18 @@ class User < ApplicationRecord
     end
 
     def verify_otp!(otp)
-        return false if verification_otp.blank? || verification_sent_at.blank?
-        return false if verification_sent_at < VERIFICATION_TTL.ago
-        return false unless ActiveSupport::SecurityUtils.secure_compare(verification_otp.to_s, otp.to_s)
+        return false unless otp_valid?(otp)
 
         # update verified_at and clear OTP fields
         update(verified_at: Time.current, verification_otp: nil, verification_sent_at: nil)
+    end
+
+    def otp_valid?(otp)
+        return false if verification_otp.blank? || verification_sent_at.blank?
+        return false if verification_sent_at < VERIFICATION_TTL.ago
+        return false if otp.blank?
+
+        ActiveSupport::SecurityUtils.secure_compare(verification_otp.to_s, otp.to_s)
     end
 
     alias_attribute :hall, :hostel

@@ -42,6 +42,26 @@ RSpec.describe 'Users API', type: :request do
       expect(response.status).to eq(200)
     end
 
+    it 'allows unauthenticated access to forgot_password action' do
+      verified_user = create(:user, verified_at: Time.current)
+      post forgot_password_users_path, params: { email: verified_user.email }
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'allows unauthenticated access to reset_password action' do
+      verified_user = create(:user, verified_at: Time.current)
+      verified_user.generate_verification_otp!
+      verified_user.save!
+
+      post reset_password_users_path, params: {
+        email: verified_user.email,
+        otp: verified_user.verification_otp,
+        new_password: 'NewSecurePassword123'
+      }
+
+      expect(response).to have_http_status(:ok)
+    end
+
     it 'allows unauthenticated access to index action' do
       get users_path
       expect(response).to have_http_status(:ok)
