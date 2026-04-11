@@ -1,11 +1,37 @@
 import React, { useState } from "react";
-import { loginUser } from "../../common/loginauth";
+import { loginUser, requestPasswordResetOtp, resetPasswordWithOtp } from "../../common/loginauth";
 import { useNavigate } from "react-router-dom";
+import {
+  BrandTitle,
+  FooterRow,
+  FormLabel,
+  HelperText,
+  InlineForm,
+  InputField,
+  PageWrapper,
+  PrimaryButton,
+  RegisterLink,
+  ResetDescription,
+  ResetPanel,
+  ResetTitle,
+  Subtitle,
+  TextButton,
+  ToggleRow
+} from "./LoginPage.styles";
 
 const LoginPage = ({ setUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showResetPanel, setShowResetPanel] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetOtp, setResetOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -38,19 +64,82 @@ const LoginPage = ({ setUser }) => {
     }
   };
 
-  // 樣式設定 (與 RegisterPage 保持一致)
-  const inputStyle = { width: "100%", padding: "12px", margin: "10px 0", borderRadius: "8px", border: "1px solid #ddd", boxSizing: "border-box" };
-  const buttonStyle = { width: "100%", padding: "12px", backgroundColor: "#702082", color: "white", border: "none", borderRadius: "25px", fontWeight: "bold", cursor: "pointer", marginTop: "15px" };
+  const toggleResetPanel = () => {
+    setShowResetPanel((prev) => !prev);
+    setResetMessage("");
+    setResetError("");
+    if (!showResetPanel && email) {
+      setResetEmail(email);
+    }
+  };
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!resetEmail.trim()) {
+      setResetError("Please enter your CUHK email first.");
+      return;
+    }
+
+    setSendingOtp(true);
+    setResetError("");
+    setResetMessage("");
+
+    try {
+      await requestPasswordResetOtp(resetEmail);
+      setResetMessage("If this account is eligible, an OTP has been sent to your inbox.");
+    } catch (error) {
+      console.error("Send OTP Error:", error.response?.data);
+      setResetError("Unable to send OTP right now. Please try again.");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setResetError("");
+    setResetMessage("");
+
+    if (!resetEmail.trim() || !resetOtp.trim()) {
+      setResetError("Please enter both email and OTP.");
+      return;
+    }
+
+    if (!newPassword) {
+      setResetError("Please enter a new password.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setResetError("New password and confirmation do not match.");
+      return;
+    }
+
+    setResettingPassword(true);
+    try {
+      await resetPasswordWithOtp(resetEmail, resetOtp, newPassword);
+      setResetMessage("Password reset successful. Please log in with your new password.");
+      setPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setResetOtp("");
+    } catch (error) {
+      console.error("Reset Password Error:", error.response?.data);
+      const errorMsg = error.response?.data?.error || "Unable to reset password";
+      setResetError(errorMsg);
+    } finally {
+      setResettingPassword(false);
+    }
+  };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "60px auto", padding: "2rem", border: "1px solid #eee", borderRadius: "15px", textAlign: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
-      <h2 style={{ color: "#702082" }}>CUHK Marketplace</h2>
-      <p style={{ color: "#666", marginBottom: "20px" }}>Sign in to continue</p>
+    <PageWrapper>
+      <BrandTitle>CUHK Marketplace</BrandTitle>
+      <Subtitle>Sign in to continue</Subtitle>
       
       <form onSubmit={handleLogin}>
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold" }}>CUHK Email</div>
-        <input
-          style={inputStyle}
+        <FormLabel>CUHK Email</FormLabel>
+        <InputField
           type="email"
           placeholder="1155xxxxxx@link.cuhk.edu.hk"
           value={email}
@@ -58,9 +147,8 @@ const LoginPage = ({ setUser }) => {
           required
         />
 
-        <div style={{ textAlign: "left", fontSize: "0.85rem", fontWeight: "bold", marginTop: "10px" }}>Password</div>
-        <input
-          style={inputStyle}
+        <FormLabel withTopSpace>Password</FormLabel>
+        <InputField
           type="password"
           placeholder="Enter your password"
           value={password}
@@ -68,16 +156,84 @@ const LoginPage = ({ setUser }) => {
           required
         />
 
-        <button type="submit" style={buttonStyle} disabled={loading}>
+        <PrimaryButton type="submit" disabled={loading}>
           {loading ? "Authenticating..." : "Login"}
-        </button>
+        </PrimaryButton>
       </form>
 
-      <div style={{ marginTop: "20px", fontSize: "0.9rem" }}>
+      <ToggleRow>
+        <TextButton
+          type="button"
+          onClick={toggleResetPanel}
+        >
+          {showResetPanel ? "Hide password reset" : "Forgot password?"}
+        </TextButton>
+      </ToggleRow>
+
+      {showResetPanel && (
+        <ResetPanel>
+          <ResetTitle>Reset Password</ResetTitle>
+          <ResetDescription>
+            Step 1: Request an OTP. Step 2: Enter OTP and your new password.
+          </ResetDescription>
+
+          <InlineForm onSubmit={handleSendOtp}>
+            <FormLabel>CUHK Email</FormLabel>
+            <InputField
+              type="email"
+              placeholder="1155xxxxxx@link.cuhk.edu.hk"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              required
+            />
+            <PrimaryButton type="submit" variant="secondary" compact disabled={sendingOtp}>
+              {sendingOtp ? "Sending OTP..." : "Send Reset OTP"}
+            </PrimaryButton>
+          </InlineForm>
+
+          <InlineForm onSubmit={handleResetPassword} withTopSpace>
+            <FormLabel>OTP Code</FormLabel>
+            <InputField
+              type="text"
+              placeholder="Enter OTP from email"
+              value={resetOtp}
+              onChange={(e) => setResetOtp(e.target.value)}
+              required
+            />
+
+            <FormLabel>New Password</FormLabel>
+            <InputField
+              type="password"
+              placeholder="Enter new password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+
+            <FormLabel>Confirm New Password</FormLabel>
+            <InputField
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+
+            <PrimaryButton type="submit" compact disabled={resettingPassword}>
+              {resettingPassword ? "Resetting..." : "Reset Password"}
+            </PrimaryButton>
+          </InlineForm>
+
+          {resetMessage && <HelperText>{resetMessage}</HelperText>}
+          {resetError && <HelperText error>{resetError}</HelperText>}
+        </ResetPanel>
+      )}
+
+      <FooterRow>
         <span>New student? </span>
-        <a href="/register" style={{ color: "#e60000", textDecoration: "none", fontWeight: "bold" }}>Create an account</a>
-      </div>
-    </div>
+        <RegisterLink href="/register">Create an account</RegisterLink>
+      </FooterRow>
+    </PageWrapper>
   );
 };
 

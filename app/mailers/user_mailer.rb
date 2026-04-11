@@ -7,4 +7,10 @@ class UserMailer < ApplicationMailer
     # app/views/user_mailer/verification_email.html.erb
     mail(to: @user.email, subject: "Your CUHK verification code")
   end
+
+  def password_reset_otp_email(user)
+    @user = user
+    @otp = @user.verification_otp
+    mail(to: @user.email, subject: "Your CUHK password reset code")
+  end
 end

@@ -7,6 +7,8 @@ Rails.application.routes.draw do
       post :register                # POST /users/register - alias for create (user registration)
       post :verify                  # POST /users/verify - verify email with OTP
       post :resend_verification     # POST /users/resend_verification - resend OTP email
+      post :forgot_password         # POST /users/forgot_password - send password reset OTP
+      post :reset_password          # POST /users/reset_password - reset password with OTP
       post :change_password         # POST /users/change_password - update password
       get :interests                # GET /users/interests - list user's interested products
     end

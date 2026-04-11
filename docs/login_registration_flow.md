@@ -8,6 +8,7 @@ This document maps the current login and registration implementation in this pro
 - Model (authentication + OTP logic): [app/models/user.rb](app/models/user.rb#L1-L400)
 - Mailer (verification email): [app/mailers/user_mailer.rb](app/mailers/user_mailer.rb#L1-L200)
 - Mailer template: [app/views/user_mailer/verification_email.html.erb](app/views/user_mailer/verification_email.html.erb#L1-L200)
+- Mailer template (password reset OTP): [app/views/user_mailer/password_reset_otp_email.html.erb](app/views/user_mailer/password_reset_otp_email.html.erb#L1-L200)
 - Routes: [config/routes.rb](config/routes.rb#L1-L200)
 
 ## Overview
@@ -19,6 +20,7 @@ High-level steps:
 - Server creates a `User`, generates a 6-digit OTP, sends a verification email, and returns a JSON response indicating an email was sent.
 - User submits OTP via `POST /users/verify` (email+otp or otp + email query). Server verifies OTP and marks the user as verified (`verified_at` set).
 - User logs in via `POST /sessions` with email and password. Login succeeds only if `verified_at` is present.
+- If user forgets password: client calls `POST /users/forgot_password` to resend OTP, then calls `POST /users/reset_password` with `{ email, otp, new_password }`.
 
 ## Endpoints (current behavior)
 
@@ -38,6 +40,18 @@ High-level steps:
 - POST /users/resend_verification
   - Controller: `UsersController#resend_verification`
   - Triggers `generate_verification_otp!` and resends email if user exists and is not verified. Returns a generic 200 message to avoid enumeration.
+
+- POST /users/forgot_password
+  - Controller: `UsersController#forgot_password`
+  - Accepts `email`.
+  - If the account exists and is verified, generates a fresh OTP and sends password-reset OTP email.
+  - Always returns generic 200 message: `password_reset_otp_sent_if_needed`.
+
+- POST /users/reset_password
+  - Controller: `UsersController#reset_password`
+  - Accepts `email`, `otp`, `new_password`.
+  - Validates OTP (24-hour TTL), updates password, and clears OTP fields.
+  - On success returns 200: `password_reset`.
 
 - POST /users/change_password
   - Controller: `UsersController#change_password`
@@ -80,10 +94,19 @@ Login:
 4. If not verified -> 403 `{ error: 'email_not_verified' }`
 5. If credentials invalid -> 401 `{ error: 'invalid_credentials' }`
 
+Forgot password:
+1. Client -> POST /users/forgot_password with `{ email }`
+2. Server: if verified account exists, regenerate OTP and send reset email
+3. Server -> Client: 200 `{ message: 'password_reset_otp_sent_if_needed' }`
+4. Client -> POST /users/reset_password with `{ email, otp, new_password }`
+5. Server: validate OTP + TTL, update password, clear OTP fields
+6. Server -> Client: 200 `{ message: 'password_reset' }`
+
 ## Notes & Recommendations
 
 - Current login returns a JSON user object but does not issue a session cookie or token. For API clients, consider adding JWT or similar token issuance (and refresh tokens) to persist sessions securely.
 - Resend verification currently has no rate limiting — add throttling (rack-attack or similar) to avoid abuse.
+- Forgot-password OTP resend currently has no rate limiting — add throttling (rack-attack or similar) to avoid abuse.
 - The email format is restricted to CUHK student addresses (see `CUHK_EMAIL_REGEX`) — ensure client-side validation matches server rules.
 - Consider exposing clearer error codes/messages in a consistent structure for the front end to consume.
 
