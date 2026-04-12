@@ -23,6 +23,19 @@ When(/^I fill in "([^"]*)" with "([^"]*)"$/) do |field_name, value|
   fill_in(field_name, with: value)
 end
 
+When(/^I select "(.*)" from the category dropdown$/) do |category_name|
+  # 1. Trigger the dropdown
+  find('[data-testid="category-dropdown-trigger"]').hover
+  
+  # 2. Instead of 'within', click the button directly using a specific selector
+  # This is more resilient to the list disappearing because it's a single command
+  find('[data-testid="category-dropdown-list"] button', text: category_name).click
+  
+  # 3. Wait for the list to actually disappear before moving to the next step
+  # This ensures React has finished its re-render
+  expect(page).to_not have_selector('[data-testid="category-dropdown-list"]')
+end
+
 When(/^I accept the prompt after clicking "([^"]*)"$/) do |button_name|
   @alert_message = accept_alert do
     click_button(button_name)

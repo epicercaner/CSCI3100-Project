@@ -8,6 +8,12 @@ require 'cucumber/rails'
 require 'capybara/cucumber'
 require 'selenium-webdriver'
 
+# Increase wait time – very important for React (components mount asynchronously)
+Capybara.default_max_wait_time = 10
+
+# Optional: make tests slower but more reliable with React
+Capybara.default_normalize_ws = true
+
 
 Capybara.register_driver :selenium_chrome_headless do |app|
   options = Selenium::WebDriver::Chrome::Options.new
