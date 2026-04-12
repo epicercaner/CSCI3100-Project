@@ -240,6 +240,8 @@ const DescriptionText = styled.p`
   color: #444;
   line-height: 1.6;
   white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 `;
 
 const ContactSection = styled.div`
@@ -253,6 +255,25 @@ const SellerRow = styled.div`
   align-items: center;
   gap: 0.8rem;
   margin-bottom: 0.8rem;
+  width: fit-content; 
+
+  padding: 8px 16px 8px 8px;
+  margin-left: -8px; 
+  
+  border-radius: 50px; 
+  cursor: pointer;
+  
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f0f0f0; 
+    transform: translateY(-1px); 
+  }
+
+  &:active {
+    background-color: #e4e4e4; 
+    transform: translateY(0); 
+  }
 `;
 
 const AvatarCircle = styled.div`
@@ -772,7 +793,7 @@ export default function ProductInfoPage() {
 
           <ContactSection>
             <SectionTitle>Contact Information</SectionTitle>
-            <SellerRow>
+            <SellerRow onClick={() => navigate(`/profile/${product.seller_id}`)}>
               <AvatarCircle>
                 {avatarUrl ? ( <AvatarImage src={avatarUrl} alt="Seller Avatar" /> ) : ( <AiOutlineUser /> )}
               </AvatarCircle>

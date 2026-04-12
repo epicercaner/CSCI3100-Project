@@ -341,7 +341,7 @@ export default function AccountInfo({ user, setUser }) {
                 onChange={handleChange}
                 disabled={!tempProfile.college}
               >
-                <option value="">Select Hostel</option>
+                <option value="">None</option>
                 {availableHalls.map(hall => <option key={hall} value={hall}>{hall}</option>)}
               </StyledSelect>
             ) : (
@@ -364,7 +364,7 @@ export default function AccountInfo({ user, setUser }) {
                 placeholder="Tell us about yourself..." 
               />
             ) : (
-              <p style={{ margin: 0, fontStyle: profile.bio ? "normal" : "italic" }}>
+              <p style={{ margin: 0, fontStyle: profile.bio ? "normal" : "italic", overflowWrap: "break-word", maxWidth: "650px" }}>
                 {profile.bio || "No bio yet."}
               </p>
             )}

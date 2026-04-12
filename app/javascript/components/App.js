@@ -27,6 +27,7 @@ import CommunityPage from "./pages/CommunityPage";
 import NavButton from "./common/NavButton";
 import { logoutUser } from "../common/loginauth";
 import SearchResultsPage from "./pages/SearchResultsPage";
+import ProfilePage from "./pages/ProfilePage";
 
 axios.defaults.withCredentials = true;
 
@@ -185,6 +186,7 @@ export default function App() {
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
+            <Route path="/profile/:id" element={<ProfilePage currentUser={user}/>} />
           </Routes>
         </main>
       </AppContainer>
