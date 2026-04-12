@@ -521,7 +521,7 @@ export default function SellPage() {
             onMouseEnter={() => setIsCategoryOpen(true)}
             onMouseLeave={() => setIsCategoryOpen(false)}
           >
-            <DropdownToggle type="button">
+            <DropdownToggle type="button" data-testid="category-dropdown-trigger">
               <DropdownSelectedText $hasSelection={!!formData.category_id}>
                 {formData.category_id || "Select a category"}
               </DropdownSelectedText>
@@ -529,7 +529,7 @@ export default function SellPage() {
             </DropdownToggle>
 
             {isCategoryOpen && (
-              <DropdownList>
+              <DropdownList data-testid="category-dropdown-list">
                 {goodsTypes.map((type) => (
                   <DropdownOption
                     key={type}

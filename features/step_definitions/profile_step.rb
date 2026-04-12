@@ -16,9 +16,9 @@ When(/^(?:|I )press the "(.*)" button$/) do |button_text|
   click_button(button_text)
 end
 
-When(/^(?:|I )fill in "(.*)" with "(.*)"$/) do |field_name, value|
-  fill_in(field_name, with: value)
-end
+# When(/^(?:|I )fill in "(.*)" with "(.*)"$/) do |field_name, value|
+#   fill_in(field_name, with: value)
+# end
 
 ## Generic "I should see" step removed from this file to avoid ambiguity
 ## The project provides a shared implementation in search_steps.rb

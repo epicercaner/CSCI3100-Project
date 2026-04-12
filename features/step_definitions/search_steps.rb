@@ -4,6 +4,21 @@ Given(/^the following categories exist:$/) do |table|
   end
 end
 
+Given(/^all categories exist/) do
+  categories = [
+  "Textbooks & Notes",
+  "Electronics & Gadgets",
+  "Furniture & Home",
+  "Clothing & Accessories",
+  "Stationery & Supplies",
+  "Snacks & Food",
+  "Others"
+  ]
+
+  # create all categories
+  categories.each { |name| Category.find_or_create_by!(category_name: name) }
+end
+
 Given(/^the following users exist:$/) do |table|
   table.hashes.each do |row|
     User.create!(

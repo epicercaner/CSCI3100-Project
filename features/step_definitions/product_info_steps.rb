@@ -1,4 +1,7 @@
 Given(/^I am logged in as "([^"]*)" with password "([^"]*)"$/) do |email, password|
+
+  user = User.find_by(email: email) || FactoryBot.create(:user, email: email, password: password, verified_at: Time.current)
+
   visit '/login'
 
   find('input[type="email"]').set(email)
