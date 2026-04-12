@@ -344,8 +344,7 @@ const ChatPage = () => {
               {chatHistory.map((msg) => {
                 const isMe = currentUser && Number(msg.sender.id) === Number(currentUser.id);
                 return (
-                  <MessageBubble key={msg.id} isMe={isMe}>
-                    {msg.message}
+                  <MessageBubble key={msg.id} isMe={isMe} dangerouslySetInnerHTML={{ __html: msg.message }}>
                   </MessageBubble>
                 );
               })}
