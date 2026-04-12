@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const baseStyles = {
@@ -30,6 +30,7 @@ const variantStyles = {
 
 const NavButton = ({ to, label, icon: Icon, variant = "default" }) => {
   const location = useLocation();
+  const [isHovered, setIsHovered] = useState(false);
   const normalizePath = (value) => (value === "/" ? "/" : value.replace(/\/+$|^\s+|\s+$/g, ""));
   const normalizedTarget = normalizePath(to);
   const normalizedLocation = normalizePath(location.pathname);
@@ -49,10 +50,22 @@ const NavButton = ({ to, label, icon: Icon, variant = "default" }) => {
           boxShadow: "0 8px 20px rgba(0, 0, 0, 0.12)",
         }
       : {}),
+      ...(isHovered && !isActive
+      ? { 
+          backgroundColor: variant === "primary" ? "#ff3333" : "#f3f4f6",
+          transform: "translateY(-1px)" 
+        }
+      : {}),
   };
 
   return (
-    <Link to={to} aria-current={isActive ? "page" : undefined} style={computedStyles}>
+    <Link 
+      to={to} 
+      aria-current={isActive ? "page" : undefined} 
+      style={computedStyles} 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {Icon && (
         <span
           aria-hidden="true"
