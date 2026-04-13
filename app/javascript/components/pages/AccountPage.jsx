@@ -121,11 +121,12 @@ export default function AccountPage({ setUser }) {
         await logoutUser();
         if (setUser) setUser(null);
         localStorage.removeItem("currentUser");
-        window.location.href = "/login";
+                navigate("/login");
+
       } catch (error) {
         console.error("Logout failed", error);
         localStorage.removeItem("currentUser");
-        window.location.href = "/login";
+        navigate("/login");
       }
     }
   };
@@ -138,14 +139,14 @@ export default function AccountPage({ setUser }) {
     );
   }
 
-  const menuItems = ["Account info", "Interested", "Selling Products", "Setting", "Log out"];
+  const menuItems = ["Account info", "Interested", "My Products", "Setting", "Log out"];
 
   // Determine which sub-component to display based on activeTab
   const renderContent = () => {
     switch (activeTab) {
       case "Account info": return <AccountInfo user={userData} />;
       case "Interested": return <Interested />;
-      case "Selling Products": return <SellingProduct />;
+      case "My Products": return <SellingProduct />;
       case "Setting": return <Setting user={userData} />;
       default: return <AccountInfo user={userData} />;
     }

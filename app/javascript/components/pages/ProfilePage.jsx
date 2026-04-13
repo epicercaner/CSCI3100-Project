@@ -54,7 +54,7 @@ export default function ProfilePage({ currentUser }) {
   };
 
   if (id) fetchProfileData();
-}, [id, currentPage, sortOption, getProducts]);
+}, [id, currentPage, sortOption]);
 
   if (loading && !profileUser) return <LoadingText>Loading user profile...</LoadingText>;
   if (error) return <ErrorText>{error}</ErrorText>;

@@ -16,6 +16,8 @@ import {
 import axios from "axios"; 
 import PriceHistoryChart from "../common/PriceHistoryChart";
 import { StatusBadge, ConditionTag } from "../../common/style";
+import apiClient from "../../common/apiClient";
+import { notify } from "../../common/notify";
 
 const ActionButton = styled.button`
   border: none;
@@ -464,7 +466,7 @@ function LikeButton({ productId, initialLiked }) {
 
   const handleLike = async () => {
     try {
-      const res = await axios.post(`/products/${productId}/interest`, {}, {
+      const res = await apiClient.post(`/products/${productId}/interest`, {}, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -473,7 +475,6 @@ function LikeButton({ productId, initialLiked }) {
       setLiked(res.data.status === 'liked');
     } catch (err) {
       if (err.response?.status === 401) {
-        alert("Please login first.");
         navigate("/login"); 
       } else {
         console.error("Failed to toggle interest", err);
@@ -503,41 +504,42 @@ function BuyButton({ product }) {
 
   const localUserId = storedUser?.id;
   
-  // 修改 1：判斷是否為「已售出」狀態
   const isSold = product?.status === 'sold';
-  
-  // 修改 2：判斷是否為「預約中」狀態
+
   const isReserved = product?.status === 'reserved';
   
   const isOwnProduct = 
     !!product?.is_owner || 
     (localUserId != null && Number(localUserId) === Number(product?.seller_id));
     
-  // 修改 3：僅在已售出、或是讀取中、且非本人產品時禁用
-  // 按照你的要求：reserved 狀態下按鈕依然要是 open 的
   const isDisabled = !isOwnProduct && (isSold || loading);
 
   const handleBuyClick = async () => {
     if (!product || isOwnProduct) return;
     
-    // 如果已經有人預約，可以換個提示語
+    if (!localUserId) {
+      notify.error("Please login first.");
+      navigate("/login");
+      return;
+    }
+    
     const confirmMsg = isReserved 
       ? `This item is currently reserved. Do you still want to message the seller about "${product.name}"?`
       : `Confirm interest in buying "${product.name}"?`;
 
+    const isConfirmed = await notify.confirm("Confirm Purchase", confirmMsg);
+    if (!isConfirmed) return;
+
     if (!window.confirm(confirmMsg)) return;
-    if (!localUserId) {
-      alert("Please login first.");
-      navigate("/login");
-      return;
-    }
 
     setLoading(true);
     try {
-      const res = await axios.post(`/products/${product.id}/buy`);
+      const res = await apiClient.post(`/products/${product.id}/buy`);
       navigate(`/chat?chat_id=${res.data.chat_id}&auto_send=true&product_name=${encodeURIComponent(product.name)}`);
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to initiate purchase.");
+      if (err.response?.status !== 401 && err.response?.status !== 403) {
+        notify.error(err.response?.data?.error || "Failed to initiate purchase.");
+      }
     } finally {
       setLoading(false);
     }
@@ -553,7 +555,6 @@ function BuyButton({ product }) {
       disabled={isDisabled}
       title={isOwnProduct ? "You cannot buy your own product." : undefined}
     >
-      {/* 圖示邏輯：如果是本人顯示編輯，如果是售出顯示灰色購物車，其餘顯示正常購物車 */}
       {isOwnProduct ? (
         <AiOutlineEdit color="#333" />
       ) : (
@@ -561,7 +562,6 @@ function BuyButton({ product }) {
       )}
       
       <ActionButtonText>
-        {/* 文字邏輯：本人顯示 Edit，售出顯示 Sold，其餘顯示 Buy */}
         {isOwnProduct ? "Edit" : isSold ? "Sold" : "Buy"}
       </ActionButtonText>
     </ActionButton>
@@ -693,17 +693,20 @@ export default function ProductInfoPage() {
       return;
     }
 
-    if (!window.confirm(`Delete "${product.name}" permanently?`)) {
-      return;
-    }
+    const isConfirmed = await notify.confirm(
+      "Delete Product", 
+      `Delete "${product.name}" permanently?`, 
+      "warning"
+    );
+    if (!isConfirmed) return;
 
     setIsDeleting(true);
     try {
-      await axios.delete(`/products/${product.id}`);
-      alert("Product deleted successfully.");
+      await apiClient.delete(`/products/${product.id}`);
+      notify.success("Product deleted successfully.");
       navigate("/", { replace: true });
     } catch (err) {
-      alert(extractApiErrorMessage(err, "Failed to delete product."));
+      notify.error(extractApiErrorMessage(err, "Failed to delete product."));
     } finally {
       setIsDeleting(false);
     }

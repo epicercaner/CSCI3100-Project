@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import axios from "axios";
+import { HiChevronRight } from "react-icons/hi";
+import apiClient from "../../common/apiClient";
+import { notify } from "../../common/notify";
+import { getMySellingProducts } from "../../common/productUtils";
 
 const PageContainer = styled.div`
   padding: 40px;
@@ -24,27 +27,45 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-`;
-
-const Th = styled.th`
+  table-layout: auto;
+  `;
+  
+  const Th = styled.th`
   padding: 15px;
   border-bottom: 2px solid #eee;
   color: #333;
   text-align: left;
   background-color: #f8f9fa;
+  // &:first-child {
+  //   width: 40%; 
+  // }
+  &:not(:first-child) {
+    // width: 1%;
+    white-space: nowrap;
+  }
 `;
+
 
 const Td = styled.td`
   padding: 15px;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
+  word-break: break-word;
+  overflow: hidden;
+  &:not(:first-child) {
+    white-space: nowrap;
+  }
 `;
 
 const ItemInfo = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: default;
   gap: 8px;
   font-weight: bold;
+  align-items: center;
+  overflow-wrap: break-word; 
+  word-wrap: break-word;
+  white-space: normal;
 `;
 
 const Thumbnail = styled.img`
@@ -53,6 +74,7 @@ const Thumbnail = styled.img`
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #ddd;
+  flex-shrink: 0;
 `;
 
 const StatusBadge = styled.span`
@@ -107,6 +129,31 @@ const DeleteButton = styled(ActionButton)`
   border: none;
 `;
 
+const ViewButton = styled.button`
+  border: none;
+  background-color: transparent;
+  padding: 4px;
+  cursor: pointer;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  color: #555;
+  
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    transform: translateX(2px);
+  }
+
+  &:active {
+    transform: translateX(0);
+`;
+
 const LoadingText = styled.div`
   padding: 40px;
   text-align: center;
@@ -133,42 +180,37 @@ export default function SellingProducts() {
   // Fetch the list of products currently being sold by the user
   const fetchMyProducts = async () => {
     try {
-      const response = await axios.get("/products/selling", {
-        withCredentials: true
-      });
-      setProducts(response.data);
+      setLoading(true);
+      const data = await getMySellingProducts();
+      setProducts(data);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching my products:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle product deletion with confirmation and CSRF token security
+  // Handle product deletion with confirmation
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
+    const confirmed = await notify.confirm("Delete Confirmation", "Are you sure you want to delete this product?");
+    if (!confirmed) return;
 
     try {
-      await axios.delete(`/products/${id}`, {
-        headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content
-        }
-      });
+      await apiClient.delete(`/products/${id}`);
       
-      // Update the local state to remove the deleted product from UI
       setProducts(products.filter(p => p.id !== id));
-      alert("Product deleted.");
+      notify.success("Product deleted successfully!"); // 使用美觀的通知
     } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Failed to delete product.");
-    }
+        console.error("Error deleting product:", error);
+        notify.error("Error deleting product: " + (error.response?.data?.error || error.message));
+        }
   };
 
   if (loading) return <LoadingText>Loading your items...</LoadingText>;
 
   return (
     <PageContainer>
-      <Title>On-Selling Products</Title>
+      <Title>My Products</Title>
       
       <Table>
         <thead>
@@ -191,13 +233,13 @@ export default function SellingProducts() {
               <tr key={product.id}>
                 <Td>
                   <ItemInfo>
-                    {product.name}
                     {product.images && product.images.length > 0 && (
                       <Thumbnail 
-                        src={product.images[0]} 
-                        alt="Product Thumbnail" 
+                      src={product.images[0]} 
+                      alt="Product Thumbnail" 
                       />
                     )}
+                    {product.name}
                   </ItemInfo>
                 </Td>
 
@@ -218,6 +260,9 @@ export default function SellingProducts() {
                     <DeleteButton onClick={() => handleDelete(product.id)}>
                       Delete
                     </DeleteButton>
+                    <ViewButton onClick={() => navigate(`/product/${product.id}`)}>
+                      <HiChevronRight size={20} />
+                    </ViewButton>
                   </ActionGroup>
                 </Td>
               </tr>

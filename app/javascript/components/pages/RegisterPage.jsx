@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { registerUser, verifyToken } from "../../common/register";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { notify } from "../../common/notify";
 
 const RegisterContainer = styled.div`
   padding: 40px;
@@ -102,7 +103,7 @@ const RegisterPage = ({ setUser }) => {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      notify.error("Passwords do not match.");
       return;
     }
 
@@ -113,10 +114,21 @@ const RegisterPage = ({ setUser }) => {
         email: email,
         password: password
       });
+      notify.success("OTP sent! Please check your CUHK email mailbox.");
       setShowOtpPopup(true); 
     } catch (error) {
-      console.error("Registration Error:", error);
-      alert(error.response?.data?.message || "Registration failed. Please check if the email is already in use or the format is incorrect.");
+      if (error.response && error.response.status === 422) {
+      const messages = error.response.data.errors;
+      
+      if (Array.isArray(messages)) {
+        notify.error(messages.join(", "));
+      } else {
+        notify.error("This ID might already be registered.");
+      }
+    } else {
+      notify.error("Server error. Please try again later.");
+    }
+    console.error("Registration Error:", error);
     } finally {
       setLoading(false);
     }
@@ -130,7 +142,7 @@ const RegisterPage = ({ setUser }) => {
       const result = await verifyToken(email, otp); 
       
       if (result.message === 'verified') {
-        alert("Verification successful! Redirecting to complete your profile...");
+        notify.success("Verification successful! Redirecting to complete your profile...");
         
         // Update global state with the user object returned from the backend
         if (setUser && result.user) {
@@ -142,7 +154,7 @@ const RegisterPage = ({ setUser }) => {
       }
     } catch (error) {
       console.error("Verify Error:", error.response?.data);
-      alert("Verification failed. Please check if the OTP is correct.");
+      notify.error("Verification failed. Please check if the OTP is correct.");
     } finally {
       setLoading(false);
     }
@@ -158,13 +170,36 @@ const RegisterPage = ({ setUser }) => {
           value={name} 
           onChange={(e) => setName(e.target.value)} 
           required 
+          onInvalid={(e) => e.target.setCustomValidity("Please enter your name")}
+          onInput={(e) => e.target.setCustomValidity("")}
         />
         <Input 
           type="email" 
-          placeholder="CUHK Email (@link.cuhk.edu.hk)" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
+          inputMode="email"
+          placeholder="1155xxxxxx@link.cuhk.edu.hk" 
+          value={email}
           required 
+          pattern="1155[0-9]{6}@link.cuhk.edu.hk"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            
+            e.target.setCustomValidity("");
+            
+            if (e.target.validity.valueMissing) {
+              e.target.setCustomValidity("Please enter your CUHK email address");
+            } else if (e.target.validity.patternMismatch) {
+              e.target.setCustomValidity(" ");
+            }
+          }}
+          
+          onInvalid={(e) => {
+            e.target.setCustomValidity("");
+            if (e.target.validity.valueMissing) {
+              e.target.setCustomValidity("Please enter your CUHK email address");
+            } else if (e.target.validity.patternMismatch) {
+              e.target.setCustomValidity("Please use your CUHK ID (e.g., 1155123456@link.cuhk.edu.hk)");
+            }
+          }}
         />
         <Input 
           type="password" 
@@ -172,6 +207,8 @@ const RegisterPage = ({ setUser }) => {
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
           required 
+          onInvalid={(e) => e.target.setCustomValidity("Please enter a password")}
+          onInput={(e) => e.target.setCustomValidity("")}
         />
         <Input 
           type="password" 
@@ -179,8 +216,9 @@ const RegisterPage = ({ setUser }) => {
           value={confirmPassword} 
           onChange={(e) => setConfirmPassword(e.target.value)} 
           required 
+          onInvalid={(e) => e.target.setCustomValidity("Please confirm your password")}
+          onInput={(e) => e.target.setCustomValidity("")}
         />
-        
         <SubmitButton type="submit" disabled={loading}>
           {loading ? "Sending..." : "Create Account"}
         </SubmitButton>
@@ -200,6 +238,8 @@ const RegisterPage = ({ setUser }) => {
                 value={otp} 
                 onChange={(e) => setOtp(e.target.value)} 
                 required 
+                onInvalid={(e) => e.target.setCustomValidity("Please enter the OTP sent to your email")}
+                onInput={(e) => e.target.setCustomValidity("")}
               />
               <SubmitButton type="submit" disabled={loading}>
                 {loading ? "Verifying..." : "Verify & Register"}

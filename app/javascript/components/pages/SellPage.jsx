@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import { MdAddPhotoAlternate } from "react-icons/md";
 import styled from "styled-components";
+import { notify } from "../../common/notify";
 
 const PageContainer = styled.div`
   max-width: 500px;
@@ -422,7 +423,7 @@ export default function SellPage() {
         const data = await response.json();
 
         if (response.ok) {
-          alert(isEditMode ? "Product updated successfully!" : "Product listed successfully!");
+          notify.success(isEditMode ? "Product updated successfully!" : "Product listed successfully!");
           const productId = data.id || id;
           if (productId) {
             navigate(`/product/${productId}`);
@@ -431,19 +432,19 @@ export default function SellPage() {
           const validationMessages = Array.isArray(data.errors) && data.errors.length > 0
             ? data.errors
             : [data.error || "Validation failed"];
-          alert(`Validation Error: ${validationMessages.join(", ")}`);
+          notify.error(`Validation Error: ${validationMessages.join(", ")}`);
         } else {
           const message = data.error || (Array.isArray(data.errors) ? data.errors.join(", ") : "Unknown error");
-          alert(`Error ${response.status}: ${message}`);
+          notify.error(`Error ${response.status}: ${message}`);
         }
       } else {
         const text = await response.text();
         console.error("Received non-JSON response:", text);
-        alert("Server returned HTML instead of JSON. Are you logged in?");
+        notify.error("Server returned HTML instead of JSON. Are you logged in?");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while submitting the form.");
+      notify.error("An error occurred while submitting the form.");
     }
   };
 
@@ -512,6 +513,8 @@ export default function SellPage() {
             onChange={handleChange}
             placeholder="e.g. Intro to Calculus Textbook"
             required
+            onInvalid={(e) => e.target.setCustomValidity("Please enter the product name")}
+            onInput={(e) => e.target.setCustomValidity("")}
           />
         </FormGroup>
 
@@ -574,6 +577,8 @@ export default function SellPage() {
             rows="4"
             placeholder="Describe the condition, features, or any flaws..."
             required
+            onInvalid={(e) => e.target.setCustomValidity("Please enter a description")}
+            onInput={(e) => e.target.setCustomValidity("")}
           />
         </FormGroup>
 
@@ -589,6 +594,8 @@ export default function SellPage() {
             step="0.1"
             min="0"
             required
+            onInvalid={(e) => e.target.setCustomValidity("Please enter a valid price")}
+            onInput={(e) => e.target.setCustomValidity("")}
           />
         </FormGroup>
 
@@ -602,6 +609,8 @@ export default function SellPage() {
             onChange={handleChange}
             placeholder="How should buyers reach you?"
             required
+            onInvalid={(e) => e.target.setCustomValidity("Please enter your contact information")}  
+            onInput={(e) => e.target.setCustomValidity("")}
           />
         </FormGroup>
 
@@ -628,6 +637,8 @@ export default function SellPage() {
                 placeholder="Write a catchy description for your college mates!"
                 required
                 $minHeight="80px"
+                onInvalid={(e) => e.target.setCustomValidity("Please enter a description for the community board")}
+                onInput={(e) => e.target.setCustomValidity("")}
               />
             </div>
           )}

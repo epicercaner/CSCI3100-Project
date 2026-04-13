@@ -1,14 +1,18 @@
 import styled from "styled-components";
 import React from "react";
-
-
-const handlePageChange = (newPage) => {
-  const newParams = new URLSearchParams(searchParams);
-  newParams.set("page", newPage.toString());
-  setSearchParams(newParams);
-};
+import { useSearchParams } from "react-router-dom";
 
 const PaginButton = ({ currentPage, totalPages }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const handlePageChange = (newPage) => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("page", newPage.toString());
+      setSearchParams(newParams);
+    };
+
+    if (totalPages <= 1) return null;
+    
     return (
         totalPages > 1 && (
             <PaginationContainer>
