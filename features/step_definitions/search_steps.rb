@@ -59,7 +59,12 @@ end
 When(/^I click "([^"]*)"$/) do |text|
   click_link_or_button(text, match: :first)
 
-  sleep 0.3
+  case text
+  when "Confirm Listing"
+    expect(page).to have_current_path(%r{\A/product/\d+\z}, wait: 10)
+  else
+    sleep 1
+  end
 end
 
 When(/^I click Search$/) do
