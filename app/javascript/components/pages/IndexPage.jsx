@@ -5,6 +5,8 @@ import ProductCard from "../common/ProductCard";
 import FiltersAndSearch from "../common/FiltersAndSearch";
 import MarketStatChart from "../common/MarketStatChart";
 import SortDropdown from "../common/SortDropDown";
+import { getProducts } from "../../common/productUtils";
+import PaginButton from "../common/PaginationButton";
 
 const PageContainer = styled.div`
   padding: 1rem;
@@ -62,45 +64,6 @@ const ProductGrid = styled.div`
   gap: 1.5rem;
 `;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding-bottom: 2rem;
-`;
-
-const PageInfo = styled.span`
-  font-weight: bold;
-  color: #555;
-`;
-
-const PaginationButton = styled.button`
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-
-  ${props => props.$isPrimary 
-    ? `
-      border: 1px solid #0066cc;
-      background-color: ${props.disabled ? "#e6f2ff" : "#0066cc"};
-      color: ${props.disabled ? "#99c2ff" : "#fff"};
-    `
-    : `
-      border: 1px solid #ccc;
-      background-color: ${props.disabled ? "#f0f0f0" : "#fff"};
-      color: ${props.disabled ? "#999" : "#333"};
-    `
-  }
-
-  &:hover {
-    ${props => !props.disabled && "opacity: 0.8;"}
-  }
-`;
-
 const ErrorText = styled.p`
   color: red;
 `;
@@ -116,51 +79,35 @@ export default function IndexPage() {
   const currentPage = parseInt(searchParams.get("page") || "1");
   const sortOption = searchParams.get("sort_by") || "default";
 
-  const handlePageChange = (newPage) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("page", newPage.toString());
-    setSearchParams(newParams);
+  useEffect(() => {
+  const fetchChart = async () => {
+    const res = await getProducts({ fetch_all: "true" });
+    if (res.data) setChartProducts(res.data);
   };
+  fetchChart();
+}, []);
 
   useEffect(() => {
-    const fetchAllForChart = async () => {
-      try {
-        const response = await fetch(`/products?fetch_all=true`);
-        if (response.ok) {
-          const jsonResponse = await response.json();
-          setChartProducts(jsonResponse.data || []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch chart data:", err);
-      }
-    };
-    fetchAllForChart();
-  }, []);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/products?page=${currentPage}&sort_by=${sortOption}`);
-        if (!response.ok) throw new Error("Failed to fetch products");
-
-        const jsonResponse = await response.json();
-          const availableProducts = (jsonResponse.data || []).filter(
-        p => p.status?.toLowerCase() !== 'sold'
-      );
-        setProducts(availableProducts);
-        if (jsonResponse.pagination) {
-          setTotalPages(jsonResponse.pagination.total_pages);
-        }
-      } catch (err) {
-        console.error("Error connecting to server:", err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [currentPage, sortOption]);
+  const fetchList = async () => {
+    setIsLoading(true);
+    try {
+      const res = await getProducts({ 
+        page: currentPage, 
+        sort_by: sortOption,
+        limit: 15
+      });
+      
+      const available = (res.data || []).filter(p => p.status?.toLowerCase() !== 'sold');
+      setProducts(available);
+      if (res.pagination) setTotalPages(res.pagination.total_pages);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchList();
+}, [currentPage, sortOption]);
 
   return (
     <PageContainer>
@@ -193,28 +140,7 @@ export default function IndexPage() {
           </ProductGrid>
       </ProductSection>
 
-      {totalPages > 1 && (
-        <PaginationContainer>
-          <PaginationButton
-            disabled={currentPage === 1}
-            onClick={() => handlePageChange(currentPage - 1)}
-          >
-            Previous
-          </PaginationButton>
-          
-          <PageInfo>
-            Page {currentPage} of {totalPages}
-          </PageInfo>
-          
-          <PaginationButton
-            $isPrimary
-            disabled={currentPage === totalPages || totalPages === 0}
-            onClick={() => handlePageChange(currentPage + 1)}
-          >
-            Next
-          </PaginationButton>
-        </PaginationContainer>
-      )}
+      <PaginButton currentPage={currentPage} totalPages={totalPages} />
     </PageContainer>
   );
 }

@@ -13,6 +13,7 @@ class ProductsController < ApplicationController
     products = Product.with_attached_images.includes(:seller).all
     products = products.search_by_name(params[:keywords]) if params[:keywords].present?
     products = products.joins(:category).where(categories: { category_name: params[:type] }) if params[:type].present?
+    products = products.where(seller_id: params[:seller_id]) if params[:seller_id].present?
 
     if params[:college].present? || params[:hall].present?
       products = products.joins(:seller)
@@ -203,10 +204,11 @@ class ProductsController < ApplicationController
 
       # Send a system message if this is the first time the buyer is requesting to buy this product
       unless chat.messages.exists?(sender_id: current_user.id)
+        system_note = "<br><i style='color: #888; font-size: 0.85em; font-style: italic;'>(Request sent via system)</i>"
         Message.create!(
           chat_id: chat.id,
           sender_id: current_user.id,
-          message: "I want to buy \"#{@product.name}\". (System: Request sent)"
+          message: "I want to buy \"#{@product.name}\".#{system_note}"
         )
       end
 

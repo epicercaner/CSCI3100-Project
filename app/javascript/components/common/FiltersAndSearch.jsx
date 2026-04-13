@@ -151,7 +151,7 @@ const SubmitSearchButton = styled.button`
   gap: 6px;
   padding: 8px 16px;
   border-radius: 20px;
-  background-color: #2563eb;
+  background-color: #702082;
   color: white;
   text-decoration: none;
   font-size: 0.9rem;

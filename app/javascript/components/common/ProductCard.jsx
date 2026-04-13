@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AiOutlinePicture } from "react-icons/ai";
 import getTimesAgo from "../../common/getTimesAgo";
 import styled from "styled-components";
-import { ConditionTag } from "../../common/style";
+import { ConditionTag, TimeTag } from "../../common/style";
 
 const PageContainer = styled.div`
   border: 1px solid #ddd;
@@ -16,19 +16,17 @@ const PageContainer = styled.div`
   display: inline-block;
   margin: 10px;
   position: relative;
-`;
 
-const TimeTag = styled.div`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: rgba(34, 34, 34, 0.44);
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  z-index: 10;
-  pointer-events: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px); 
+  }
+
+  &:active {
+    background-color: #e4e4e4; 
+    transform: translateY(0); 
+  }
 `;
 
 const ImageWrapper = styled.div`
