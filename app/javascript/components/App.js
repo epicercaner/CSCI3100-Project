@@ -14,6 +14,8 @@ import {
   BsPeopleFill,
   BsHouseDoor
 } from "react-icons/bs";
+import { Toaster } from 'sonner';
+import { notify } from "../common/notify";
 
 import IndexPage from "./pages/IndexPage";
 import AccountPage from "./pages/AccountPage";
@@ -104,93 +106,103 @@ export default function App() {
 
   const handleLogoutClick = async (e) => {
     e.preventDefault(); 
-    if (window.confirm("Are you sure you want to log out?")) {
+    const isConfirmed = await notify.confirm(
+      "Log Out",
+      "Are you sure you want to log out?"
+    );
+    
+    if (!isConfirmed) return;
       try {
         await logoutUser();
         setUser(null); 
         setShowProfile(false); 
         localStorage.removeItem("currentUser");
-        window.location.href = "/"; 
+        notify.success("Logged out successfully.");
+        setTimeout(() => {
+          window.location.href = "/"; 
+        }, 400);
       } catch (err) {
         console.error("Logout failed", err);
         setUser(null);
         localStorage.removeItem("currentUser");
         window.location.href = "/";
       }
-    }
   };
   
   return (
-    <BrowserRouter>
-      <AppContainer>
-        <Header>
-          <Nav>
-            <BrandLink to="/">
-              <LogoImg src="/logo.png" alt="logo" />
-              <Title>CUHK Second-hand Marketplace</Title>
-            </BrandLink>
-            
-            <NavRow>
-              <NavButton label="Community" to="/community" icon={BsPeopleFill} />
-  
-               <RightNavGroup>
-                <NavButton label="Notifications" to="/notifications" icon={BsBell} />
-                <NavButton label="Chat" to="/chat" icon={BsChatDots} />
-                <NavButton label="Sell" to="/sell" icon={BsHandbag} variant="primary" />
+    <>
+        <Toaster position="top-center" richColors expand={true} />
+        <BrowserRouter>
+          <AppContainer>
+            <Header>
+              <Nav>
+                <BrandLink to="/">
+                  <LogoImg src="/logo.png" alt="logo" />
+                  <Title>CUHK Second-hand Marketplace</Title>
+                </BrandLink>
+                
+                <NavRow>
+                  <NavButton label="Community" to="/community" icon={BsPeopleFill} />
+      
+                  <RightNavGroup>
+                    <NavButton label="Notifications" to="/notifications" icon={BsBell} />
+                    <NavButton label="Chat" to="/chat" icon={BsChatDots} />
+                    <NavButton label="Sell" to="/sell" icon={BsHandbag} variant="primary" />
 
-                <DropdownContainer 
-                  onMouseEnter={() => setShowProfile(true)} 
-                  onMouseLeave={() => setShowProfile(false)}
-                >
-                  <NavButton label="Setting" to="#" icon={BsGear} />
-                  
-                  <DropdownMenu show={showProfile}>
-                    {user && user.email ? (
-                      <>
-                        <div style={userEmailLabel}>{user.email}</div>
-                        <DropdownItem to="/Account">
-                          <BsPersonCircle /> Account Info
-                        </DropdownItem>
-                        <hr style={divider} />
-                        <DropdownItem as="button" onClick={handleLogoutClick} style={logoutBtnStyle}>
-                          <BsBoxArrowLeft /> Log out
-                        </DropdownItem>
-                      </>
-                    ) : (
-                      <>
-                        <DropdownItem to="/login">
-                          <BsBoxArrowInRight /> Log in
-                        </DropdownItem>
-                        <DropdownItem to="/register">
-                          <BsPencilSquare /> Register
-                        </DropdownItem>
-                      </>
-                    )}  
-                  </DropdownMenu>
-                </DropdownContainer>
-              </RightNavGroup>
-            </NavRow>
-          </Nav>
-        </Header>
+                    <DropdownContainer 
+                      onMouseEnter={() => setShowProfile(true)} 
+                      onMouseLeave={() => setShowProfile(false)}
+                    >
+                      <NavButton label="Setting" to="#" icon={BsGear} />
+                      
+                      <DropdownMenu show={showProfile}>
+                        {user && user.email ? (
+                          <>
+                            <div style={userEmailLabel}>{user.email}</div>
+                            <DropdownItem to="/Account">
+                              <BsPersonCircle /> Account Info
+                            </DropdownItem>
+                            <hr style={divider} />
+                            <DropdownItem as="button" onClick={handleLogoutClick} style={logoutBtnStyle}>
+                              <BsBoxArrowLeft /> Log out
+                            </DropdownItem>
+                          </>
+                        ) : (
+                          <>
+                            <DropdownItem to="/login">
+                              <BsBoxArrowInRight /> Log in
+                            </DropdownItem>
+                            <DropdownItem to="/register">
+                              <BsPencilSquare /> Register
+                            </DropdownItem>
+                          </>
+                        )}  
+                      </DropdownMenu>
+                    </DropdownContainer>
+                  </RightNavGroup>
+                </NavRow>
+              </Nav>
+            </Header>
 
-        <main>
-          <Routes>
-            <Route path="/" element={<IndexPage />} />
-            <Route path="/login" element={<LoginPage setUser={setUser} />} />
-            <Route path="/register" element={<RegisterPage setUser={setUser} />} />
-            <Route path="/Account" element={<AccountPage setUser={setUser} />} />
-            <Route path="/product/:id" element={<ProductInfoPage />} />
-            <Route path="/sell" element={<SellPage />} />
-            <Route path="/edit/:id" element={<SellPage />} />
-            <Route path="/notifications" element={<NotificationPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/search" element={<SearchResultsPage />} />
-            <Route path="/profile/:id" element={<ProfilePage currentUser={user}/>} />
-          </Routes>
-        </main>
-      </AppContainer>
-    </BrowserRouter>
+            <main>
+              <Routes>
+                <Route path="/" element={<IndexPage />} />
+                <Route path="/login" element={<LoginPage setUser={setUser} />} />
+                <Route path="/register" element={<RegisterPage setUser={setUser} />} />
+                <Route path="/Account" element={<AccountPage setUser={setUser} />} />
+                <Route path="/product/:id" element={<ProductInfoPage />} />
+                <Route path="/sell" element={<SellPage />} />
+                <Route path="/edit/:id" element={<SellPage />} />
+                <Route path="/notifications" element={<NotificationPage />} />
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/community" element={<CommunityPage />} />
+                <Route path="/search" element={<SearchResultsPage />} />
+                <Route path="/profile/:id" element={<ProfilePage currentUser={user}/>} />
+              </Routes>
+            </main>
+          </AppContainer>
+        </BrowserRouter>
+    </>
   );
 }
 

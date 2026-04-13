@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import axios from "axios";
 import { createConsumer } from "@rails/actioncable";
+import apiClient from "../../common/apiClient";
+import { notify } from "../../common/notify";
 
 
 const PageContainer = styled.div`
@@ -50,6 +51,15 @@ const ChatHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  white-space: normal; 
+  overflow-wrap: break-word;
+  word-break: break-word;
+  > div {
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
 `;
 
 const MessageList = styled.div`
@@ -68,9 +78,12 @@ const MessageBubble = styled.div`
   padding: 10px 15px;
   border-radius: 15px;
   font-size: 0.95rem;
-  background-color: ${props => props.isMe ? "#702082" : "#e9e9eb"};
-  color: ${props => props.isMe ? "#fff" : "#000"};
+  background-color: ${props => props.isMe ? '#D8B4FE' : '#F3F4F6'}; 
+  color: ${props => props.isMe ? '#111827' : '#1F2937'};
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 `;
 
 const ControlPanel = styled.div`
@@ -168,14 +181,14 @@ const ChatPage = () => {
   useEffect(() => {
     const initChat = async () => {
       try {
-        const userRes = await axios.get("/sessions");
+        const userRes = await apiClient.get("/sessions");
         if (!userRes.data || !userRes.data.id) {
           navigate("/login");
           return;
         }
         setCurrentUser(userRes.data);
 
-        const res = await axios.get("/chats");
+        const res = await apiClient.get("/chats");
         setChats(res.data);
         
         if (chatIdFromUrl) {
@@ -218,10 +231,12 @@ const ChatPage = () => {
 
   const fetchMessages = async (id) => {
     try {
-      const res = await axios.get(`/chats/${id}/messages`);
+      const res = await apiClient.get(`/chats/${id}/messages`);
       setChatHistory(res.data);
       setTimeout(scrollToBottom, 100);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+    }
   };
 
   const scrollToBottom = () => {
@@ -237,7 +252,7 @@ const ChatPage = () => {
     if (messageContent === "" || !activeChat) return;
 
     try {
-      await axios.post(`/chats/${activeChat.id}/messages`, {
+      await apiClient.post(`/chats/${activeChat.id}/messages`, {
         message: { message: messageContent }
       });
       if (!customText) setInputText("");
@@ -248,24 +263,33 @@ const ChatPage = () => {
 
   // Finalize the trade between seller and a specific buyer
   const handleFinalConfirm = async (targetBuyerId) => {
-    if (!window.confirm("Confirm selling to this buyer? Other chats for this item will be closed.")) return;
+  const isConfirmed = await notify.confirm(
+    "Confirm Sale?",
+    "Confirm selling to this buyer? Other chats for this item will be closed."
+  );
+  if (!isConfirmed) return;
 
-    try {
-      const res = await axios.patch(`/products/${activeChat.product.id}`, {
-        product: { status: 'sold', buyer_id: targetBuyerId }
-      });
+  try {
+    const res = await apiClient.patch(`/products/${activeChat.product.id}`, {
+      product: { status: 'sold', buyer_id: targetBuyerId }
+    });
 
-      if (res.status === 200) {
-        alert("Success! Item sold.");
-        const updatedProduct = { ...activeChat.product, status: 'sold', buyer_id: targetBuyerId };
-        setActiveChat(prev => ({ ...prev, product: updatedProduct }));
-        setChats(prev => prev.filter(c => c.product.id !== updatedProduct.id || Number(c.buyer.id) === Number(targetBuyerId)));
-        await handleSendMessage(null, "🎊 System: The seller has confirmed the trade. Item SOLD.");
-      }
-    } catch (err) {
-      alert("Error confirming trade");
+    if (res.status === 200) {
+      notify.success("Success! Item sold.");
+      
+      const updatedProduct = { ...activeChat.product, status: 'sold', buyer_id: targetBuyerId };
+      setActiveChat(prev => ({ ...prev, product: updatedProduct }));
+      setChats(prev => prev.filter(c => c.product.id !== updatedProduct.id || Number(c.buyer.id) === Number(targetBuyerId)));
+      
+      await handleSendMessage(null, "🎊 System: The seller has confirmed the trade. Item SOLD.");
     }
-  };
+  } catch (err) {
+    const status = err.response?.status;
+    if (status !== 401 && status !== 403) {
+      notify.error("Error confirming trade");
+    }
+  }
+};
 
   // Close the current chat conversation for either seller or buyer
   const handleCancelThisChat = async (chatId) => {
@@ -273,30 +297,35 @@ const ChatPage = () => {
   const myName = currentUser.name;
   const productName = activeChat.product.name;
 
-  const confirmMsg = isSeller 
+  const confirmTitle = isSeller ? "Reject Buyer?" : "Cancel Trade?";
+  const confirmText = isSeller 
     ? `Reject ${partnerName}? This will notify them and close the chat.` 
     : "Cancel this trade? The seller will be notified.";
   
-  if (!window.confirm(confirmMsg)) return;
+  const isConfirmed = await notify.confirm(confirmTitle, confirmText);
+  if (!isConfirmed) return;
 
   try {
     const notificationText = `⚠️ System: ${myName} has cancelled the trading of ${productName}`;
     
-    await axios.post(`/chats/${chatId}/messages`, {
+    await apiClient.post(`/chats/${chatId}/messages`, {
       message: { message: notificationText }
     });
 
-    await axios.patch(`/products/${activeChat.product.id}`, {
+    await apiClient.patch(`/products/${activeChat.product.id}`, {
       action_type: 'cancel_chat',
       chat_id: chatId
     });
     
     setChats(prev => prev.filter(c => c.id !== chatId));
     setActiveChat(null);
-    alert("Chat closed successfully.");
+    notify.success("Chat closed successfully.");
   } catch (err) {
     console.error("Error during cancellation:", err);
-    alert("Error closing chat");
+    const status = err.response?.status;
+    if (status !== 401 && status !== 403) {
+      notify.error("Error closing chat");
+    }
   }
 };
 

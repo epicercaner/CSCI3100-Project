@@ -1,11 +1,11 @@
-import axios from "axios";
+import apiClient from "./apiClient";
 
 export const getProducts = async (params) => {
-  try {
-    const response = await axios.get("/products", { params });
+    const response = await apiClient.get("/products", { params });
     return response.data;
-  } catch (error) {
-    console.error("API Fetch Error:", error);
-    throw error; 
-  }
+};
+
+export const getMySellingProducts = async () => {
+  const response = await apiClient.get("/products/selling");
+  return response.data;
 };

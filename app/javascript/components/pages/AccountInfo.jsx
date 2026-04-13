@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import axios from "axios";
 import { 
   FaUserCircle, FaEnvelope, FaPenNib, FaRegEdit, 
   FaSave, FaTimes, FaUniversity, FaBuilding, FaCamera 
 } from "react-icons/fa";
 import { MdOutlineDateRange } from "react-icons/md";
 import { colleges } from "../../common/collegeConstants";
-
+import apiClient from "../../common/apiClient";
+import { notify } from "../../common/notify";
 
 const Card = styled.div`
   padding: 30px;
@@ -217,7 +217,7 @@ export default function AccountInfo({ user, setUser }) {
   // Validate required fields and send multi-part form data to backend
   const handleSave = async () => {
     if (!tempProfile.college) {
-      alert("Please select your College before saving.");
+      notify.error("Please select your College before saving.");
       return;
     }
 
@@ -230,18 +230,21 @@ export default function AccountInfo({ user, setUser }) {
     if (selectedFile) formData.append("profile_picture", selectedFile);
     
     try {
-      const response = await axios.patch(`/users/${user.id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const response = await apiClient.patch(`/users/${user.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data", "Accept": "application/json" },
       });
+
       if (response.status === 200) {
         setProfile({ ...tempProfile, avatarUrl: response.data.profile_picture_url || tempProfile.avatarUrl });
         if (setUser) setUser(response.data);
         setIsEditing(false);
         setPreviewUrl(null);
-        alert("Profile updated successfully!");
+        
+        notify.success("Profile updated successfully!");
       }
     } catch (error) {
-      alert(error.response?.data?.error || "Update failed");
+      const errorMsg = error.response?.data?.error || "Update failed";
+      notify.error(errorMsg);
     } finally {
       setLoading(false);
     }

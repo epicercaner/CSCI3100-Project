@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { loginUser, requestPasswordResetOtp, resetPasswordWithOtp } from "../../common/loginauth";
 import { useNavigate } from "react-router-dom";
+import { notify } from "../../common/notify";
 import {
   BrandTitle,
   FooterRow,
   FormLabel,
-  HelperText,
   InlineForm,
   InputField,
   PageWrapper,
@@ -30,8 +30,6 @@ const LoginPage = ({ setUser }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [resetMessage, setResetMessage] = useState("");
-  const [resetError, setResetError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -42,7 +40,7 @@ const LoginPage = ({ setUser }) => {
       const data = await loginUser(email, password);
       
       if (data.message === 'logged_in') {
-        alert("Login Success!");
+        notify.success("Login Success!");
         
         if (setUser) setUser(data.user);
         
@@ -55,9 +53,9 @@ const LoginPage = ({ setUser }) => {
       const errorMsg = error.response?.data?.error || "Invalid email or password";
       
       if (errorMsg === 'email_not_verified') {
-        alert("Your email is not verified. Please check your inbox for the OTP.");
+        notify.error("Your email is not verified. Please check your inbox for the OTP.");
       } else {
-        alert("Login Failed: " + errorMsg);
+        notify.error("Login Failed: " + errorMsg);
       }
     } finally {
       setLoading(false);
@@ -76,7 +74,7 @@ const LoginPage = ({ setUser }) => {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!resetEmail.trim()) {
-      setResetError("Please enter your CUHK email first.");
+      notify.error("Please enter your CUHK email first.");
       return;
     }
 
@@ -86,10 +84,10 @@ const LoginPage = ({ setUser }) => {
 
     try {
       await requestPasswordResetOtp(resetEmail);
-      setResetMessage("If this account is eligible, an OTP has been sent to your inbox.");
+      notify.success("If this account is eligible, an OTP has been sent to your inbox.");
     } catch (error) {
       console.error("Send OTP Error:", error.response?.data);
-      setResetError("Unable to send OTP right now. Please try again.");
+      notify.error("Unable to send OTP right now. Please try again.");
     } finally {
       setSendingOtp(false);
     }
@@ -101,24 +99,24 @@ const LoginPage = ({ setUser }) => {
     setResetMessage("");
 
     if (!resetEmail.trim() || !resetOtp.trim()) {
-      setResetError("Please enter both email and OTP.");
+      notify.error("Please enter both email and OTP.");
       return;
     }
 
     if (!newPassword) {
-      setResetError("Please enter a new password.");
+      notify.error("Please enter a new password.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setResetError("New password and confirmation do not match.");
+      notify.error ("New password and confirmation do not match.");
       return;
     }
 
     setResettingPassword(true);
     try {
       await resetPasswordWithOtp(resetEmail, resetOtp, newPassword);
-      setResetMessage("Password reset successful. Please log in with your new password.");
+      notify.success("Password reset successful. Please log in with your new password.");
       setPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -126,7 +124,7 @@ const LoginPage = ({ setUser }) => {
     } catch (error) {
       console.error("Reset Password Error:", error.response?.data);
       const errorMsg = error.response?.data?.error || "Unable to reset password";
-      setResetError(errorMsg);
+      notify.error(errorMsg);
     } finally {
       setResettingPassword(false);
     }
@@ -143,8 +141,28 @@ const LoginPage = ({ setUser }) => {
           type="email"
           placeholder="1155xxxxxx@link.cuhk.edu.hk"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
           required
+          pattern="1155[0-9]{6}@link.cuhk.edu.hk"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            
+            e.target.setCustomValidity("");
+            
+            if (e.target.validity.valueMissing) {
+              e.target.setCustomValidity("Please enter your CUHK email address");
+            } else if (e.target.validity.patternMismatch) {
+              e.target.setCustomValidity(" ");
+            }
+          }}
+          
+          onInvalid={(e) => {
+            e.target.setCustomValidity("");
+            if (e.target.validity.valueMissing) {
+              e.target.setCustomValidity("Please enter your CUHK email address");
+            } else if (e.target.validity.patternMismatch) {
+              e.target.setCustomValidity("Please use your CUHK ID (e.g., 1155123456@link.cuhk.edu.hk)");
+            }
+          }}
         />
 
         <FormLabel withTopSpace>Password</FormLabel>
@@ -154,6 +172,8 @@ const LoginPage = ({ setUser }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          onInvalid={(e) => e.target.setCustomValidity("Please enter your password")}
+          onInput={(e) => e.target.setCustomValidity("")}
         />
 
         <PrimaryButton type="submit" disabled={loading}>
@@ -185,6 +205,8 @@ const LoginPage = ({ setUser }) => {
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}
               required
+              onInvalid={(e) => e.target.setCustomValidity("Please enter a valid CUHK email address")}
+              onInput={(e) => e.target.setCustomValidity("")}
             />
             <PrimaryButton type="submit" variant="secondary" compact disabled={sendingOtp}>
               {sendingOtp ? "Sending OTP..." : "Send Reset OTP"}
@@ -199,6 +221,9 @@ const LoginPage = ({ setUser }) => {
               value={resetOtp}
               onChange={(e) => setResetOtp(e.target.value)}
               required
+              onInvalid={(e) => e.target.setCustomValidity("Please enter the OTP sent to your email")}
+              onInput={(e) => e.target.setCustomValidity("")}
+
             />
 
             <FormLabel>New Password</FormLabel>
@@ -208,6 +233,8 @@ const LoginPage = ({ setUser }) => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
+              onInvalid={(e) => e.target.setCustomValidity("Please enter a new password")}
+              onInput={(e) => e.target.setCustomValidity("")}
             />
 
             <FormLabel>Confirm New Password</FormLabel>
@@ -217,15 +244,14 @@ const LoginPage = ({ setUser }) => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              onInvalid={(e) => e.target.setCustomValidity("Please confirm your new password")}
+              onInput={(e) => e.target.setCustomValidity("")}
             />
 
             <PrimaryButton type="submit" compact disabled={resettingPassword}>
               {resettingPassword ? "Resetting..." : "Reset Password"}
             </PrimaryButton>
           </InlineForm>
-
-          {resetMessage && <HelperText>{resetMessage}</HelperText>}
-          {resetError && <HelperText error>{resetError}</HelperText>}
         </ResetPanel>
       )}
 
