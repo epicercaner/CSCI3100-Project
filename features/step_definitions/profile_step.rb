@@ -1,48 +1,34 @@
-require 'uri'
-require 'cgi'
-
-#Given(/^(?:|I )am on the profile page$/) do
-#  visit '/profile'
-#end
-
-When(/I hover over settings/) do
-  setting_link = find('a', text: 'Setting', visible: true)
-  setting_link.hover
+When(/^I click the "Edit Profile" button$/) do
+  click_button("Edit Profile")
 end
 
-When(/^(?:|I )click on the "(.*)" sidebar link$/) do |link_text|
-    setting_link = find('a', text: 'Setting', visible: true)
-    setting_link.hover
-
-    sleep 0.3
-
-    find('button, a', text: link_text, visible: true).click
+When(/^I fill in "([^"]*)" with "([^"]*)"$/) do |field_name, value|
+  fill_in(field_name, with: value)
 end
 
-When(/^(?:|I )press the "(.*)" button$/) do |button_text|
-  click_button(button_text)
+When(/^I select "([^"]*)" from "([^"]*)"$/) do |option, dropdown_name|
+  select(option, from: dropdown_name)
 end
 
-# When(/^(?:|I )fill in "(.*)" with "(.*)"$/) do |field_name, value|
-#   fill_in(field_name, with: value)
-# end
-
-## Generic "I should see" step removed from this file to avoid ambiguity
-## The project provides a shared implementation in search_steps.rb
-## which will be used for assertions like `Then I should see "..."`.
-
-Then(/^the purchase table should contain:$/) do |table|
-  table.raw.each do |row|
-    row.each do |cell|
-      expect(page).to have_selector('td', text: cell)
-    end
-  end
+When(/^I click the "Save" button$/) do
+  click_button("Save")
 end
 
-When(/^(?:|I )confirm the logout dialog$/) do
-  page.driver.browser.switch_to.alert.accept
+Then(/^I should see "([^"]*)"$/) do |message|
+  expect(page).to have_content(message)
 end
 
-def find_sidebar_item(text)
-  find('div', text: text)
+Then(/^my profile should display "([^"]*)"$/) do |expected_text|
+  expect(page).to have_content(expected_text)
+end
+
+Then(/^the account "([^"]*)" should have college "([^"]*)" and hostel "([^"]*)"$/) do |email, college, hostel|
+  user = User.find_by!(email: email)
+  expect(user.college).to eq(college)
+  expect(user.hostel).to eq(hostel)
+end
+
+Then(/^the profile should still be in edit mode$/) do
+  expect(page).to have_button("Cancel")
+  expect(page).to have_selector('select[name="college"]')
 end
