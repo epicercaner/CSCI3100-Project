@@ -9,10 +9,6 @@ Given(/^I am logged in as "([^"]*)" with password "([^"]*)"$/) do |email, passwo
 
   click_button('Login')
 
-  accept_alert do
-
-  end
-
   expect(page).to have_current_path('/Account', wait: 5)
 end
 
