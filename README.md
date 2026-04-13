@@ -85,20 +85,22 @@ bundle exec cucumber
 
 | Feature Name | Primary Developer (Name) | Secondary Developer (Name) | Notes |
 |---|---|---|---|
-| User Management | Chau Wing Fun(wilsoncc04) | [Name] | Include: Admin, user, login/register management |
+| User Management | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Include: Admin, user, login/register management |
 | Heroku Implementations | [Name] | [Name] | [Short note] |
-| Backend Controllers | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Database Management | [Name] | [Name] | [Short note] |
+| Backend Controllers | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | develop API logic |
+| Database Management | [Name] | Yeung Chun Hin(HYC442) | [Short note] |
 | Search and Filter | [Name] | [Name] | [Short note] |
 | Purchase History | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
 | Community | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Image Management | [Name] | [Name] | [Short note] |
+| Image Management | [Name] | Yeung Chun Hin(HYC442) | Handling ActiveStorage for User Avatars and Product images |
 | RSpec Testing | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Platform management | [Name] | [Name] | [Short note] |
+| Platform management | [Name] | Yeung Chun Hin(HYC442) | [Short note] |
 | Chart.js | [Name] | [Name] | [Short note] |
-| Real-time Notifications | [Name] | [Name] | [Short note] |
-| Chat and messages | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Cucumber Testing | [Name] | [Name] | [Short note] |
+| Chat and messages | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Action cable |
+| Cucumber Testing | Yeung Chun Hin(HYC442) | [Name] | BDD testing for the project |
+| Account Page | Yeung Chun Hin (HYC442) | [Name] | User Profile Editing |
+| Real-time Notification | Yeung Chun Hin(HYC442) | [Name] | implementing instant alerts|
+| Interested/Purchase Buttons | Yeung Chun Hin(HYC442) | [Name] | calling action after click|
 | [Template] | [Name] | [Name] | [Short note] |
 
 

@@ -5,6 +5,14 @@ module NavigationHelpers
       '/'
     when /the (.*)index\s?page/
       '/index'
+    when /^the chat page$/i, /chat/i
+      '/chat'
+    when /^the account page$/i, /account/i
+      '/Account'
+    when /^the login page$/i, /login/i
+      '/login'
+    when /^(the )?notifications( page)?$/
+      '/notifications'
     else
       begin
         page_name =~ /^the (.*) page$/
