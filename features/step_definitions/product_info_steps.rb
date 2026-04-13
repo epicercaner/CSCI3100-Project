@@ -7,11 +7,13 @@ Given(/^I am logged in as "([^"]*)" with password "([^"]*)"$/) do |email, passwo
   find('input[type="email"]').set(email)
   find('input[type="password"]').set(password)
 
+  click_button('Login')
+
   accept_alert do
-    click_button('Login')
+
   end
 
-#  expect(page).to have_current_path('/Account', wait: 5)
+  expect(page).to have_current_path('/Account', wait: 5)
 end
 
 def visit_product_details_page(product_name)
