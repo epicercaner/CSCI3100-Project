@@ -86,18 +86,18 @@ bundle exec cucumber
 | Feature Name | Primary Developer (Name) | Secondary Developer (Name) | Notes |
 |---|---|---|---|
 | User Management | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Include: Admin, user, login/register management |
-| Heroku Implementations | [Name] | [Name] | [Short note] |
-| Backend Controllers | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | develop API logic |
-| Database Management | [Name] | Yeung Chun Hin(HYC442) | [Short note] |
-| Search and Filter | [Name] | [Name] | [Short note] |
+| Heroku Implementations | Cheung Tsz Ho(epicercaner) | [Name] | Deploy the service by configuring dynos and addons, and report fail builds on heroku whenever they occur |
+| Backend Controllers | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442), Cheung Tsz Ho(epicercaner) | develop API logic |
+| Database Management | Cheung Tsz Ho(epicercaner) | Yeung Chun Hin(HYC442) | creating and editing database tables based on needs |
+| Search and Filter | [Name] | Cheung Tsz Ho(epicercaner) | Implemented fuzzy search for searching |
 | Purchase History | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
 | Community | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Image Management | [Name] | Yeung Chun Hin(HYC442) | Handling ActiveStorage for User Avatars and Product images |
+| Image Management | Cheung Tsz Ho(epicercaner) | Yeung Chun Hin(HYC442) | Handling ActiveStorage for User Avatars and Product images, and for cloudinary configuration in heroku deployment |
 | RSpec Testing | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
 | Platform management | [Name] | Yeung Chun Hin(HYC442) | [Short note] |
 | Chart.js | [Name] | [Name] | [Short note] |
 | Chat and messages | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Action cable |
-| Cucumber Testing | Yeung Chun Hin(HYC442) | [Name] | BDD testing for the project |
+| Cucumber Testing | Yeung Chun Hin(HYC442) | Cheung Tsz Ho(epicercaner) | BDD testing for the project |
 | Account Page | Yeung Chun Hin (HYC442) | [Name] | User Profile Editing |
 | Real-time Notification | Yeung Chun Hin(HYC442) | [Name] | implementing instant alerts|
 | Interested/Purchase Buttons | Yeung Chun Hin(HYC442) | [Name] | calling action after click|
