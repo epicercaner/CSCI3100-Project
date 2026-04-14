@@ -2,7 +2,11 @@
   "name": "app",
   "private": true,
   "devDependencies": {
-    "esbuild": "^0.27.3"
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "esbuild": "^0.27.3",
+    "jest": "^30.3.0"
   },
   "scripts": {
     "build": "esbuild app/javascript/application.js --bundle --sourcemap --outdir=app/assets/builds --public-path=/assets --loader:.js=jsx",
