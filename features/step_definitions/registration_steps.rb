@@ -7,17 +7,8 @@ When(/^I fill in the following registration details:$/) do |table|
   @current_registration_email = data['email']
 end
 
-Given(/^a user with email "([^"]*)" already exists$/) do |email|
-  user = User.find_or_initialize_by(email: email)
-  user.assign_attributes(
-    name: "Existing User",
-    password: "Password123!",
-    password_confirmation: "Password123!",
-    cuhk_id: email.split('@').first,
-    college: "Shaw",
-    verified_at: Time.current
-  )
-  user.save!(validate: false) 
+Then(/^I should see the OTP verification popup$/) do
+  expect(page).to have_selector('h3', text: 'Verify OTP')
 end
 
 Then(/^I should see the registration OTP popup$/) do
