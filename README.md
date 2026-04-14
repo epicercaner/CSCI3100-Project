@@ -87,20 +87,24 @@ bundle exec cucumber
 |---|---|---|---|
 | User Management | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Include: Admin, user, login/register management |
 | Heroku Implementations | Cheung Tsz Ho(epicercaner) | [Name] | Deploy the service by configuring dynos and addons, and report fail builds on heroku whenever they occur |
-| Backend Controllers | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442), Cheung Tsz Ho(epicercaner) | develop API logic |
-| Database Management | Cheung Tsz Ho(epicercaner) | Yeung Chun Hin(HYC442) | creating and editing database tables based on needs |
-| Search and Filter | [Name] | Cheung Tsz Ho(epicercaner) | Implemented fuzzy search for searching |
-| Purchase History | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Community | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
+| Backend Controllers | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442), Cheung Tsz Ho(epicercaner), Zhou Wing Hin(zzzzzz75) | develop API logic |
+| Marketplace Core Flows & UI/UX | Zhou Wing Hin(zzzzzz75) | Yeung Chun Hin(HYC442) | Frontend Infrastructure and user flows/interaction designs |
+| Database Management | Cheung Tsz Ho(epicercaner) | Yeung Chun Hin(HYC442), Zhou Wing Hin(zzzzzz75) | creating and editing database tables based on needs |
+| Search and Filter | Zhou Wing Hin(zzzzzz75) | Cheung Tsz Ho(epicercaner) | Implemented fuzzy search for searching |
+| Sorting System | Zhou Wing Hin(zzzzzz75) | Implemented sorting by date and price
+| My Own Products | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Showing own products sales record |
+| Community | Chau Wing Fun(wilsoncc04) | Zhou Wing Hin(zzzzzz75) | Products Promotion |
 | Image Management | Cheung Tsz Ho(epicercaner) | Yeung Chun Hin(HYC442) | Handling ActiveStorage for User Avatars and Product images, and for cloudinary configuration in heroku deployment |
 | RSpec Testing | Chau Wing Fun(wilsoncc04) | [Name] | [Short note] |
-| Platform management | [Name] | Yeung Chun Hin(HYC442) | [Short note] |
-| Chart.js | [Name] | [Name] | [Short note] |
+| Platform management | Zhou Wing Hin(zzzzzz75) | Yeung Chun Hin(HYC442) | WSL/Selenium Config |
+| UI/UX Optimization | Zhou Wing Hin(zzzzzz75) | Yeung Chun Hin(HYC442) | Styling and Interaction designs |
+| Market Visualizations(chart.js) | Zhou Wing Hin(zzzzzz75) | [Name] | Market Statistics and Price History |
 | Chat and messages | Chau Wing Fun(wilsoncc04) | Yeung Chun Hin(HYC442) | Action cable |
-| Cucumber Testing | Yeung Chun Hin(HYC442) | Cheung Tsz Ho(epicercaner) | BDD testing for the project |
-| Account Page | Yeung Chun Hin (HYC442) | [Name] | User Profile Editing |
+| Cucumber Testing | Zhou Wing Hin(zzzzzz75), Yeung Chun Hin(HYC442) | Cheung Tsz Ho(epicercaner) | BDD testing for the project |
+| Profile Management | Yeung Chun Hin (HYC442) | [Name] | User Profile Editing and security management |
 | Real-time Notification | Yeung Chun Hin(HYC442) | [Name] | implementing instant alerts|
-| Interested/Purchase Buttons | Yeung Chun Hin(HYC442) | [Name] | calling action after click|
+| Interested/Purchase | Yeung Chun Hin(HYC442) | [Name] | calling action after click|
+| Interaction Feedback | Zhou Wing Hin(zzzzzz75) | notifying system (alert & confirm) |
 | [Template] | [Name] | [Name] | [Short note] |
 
 
